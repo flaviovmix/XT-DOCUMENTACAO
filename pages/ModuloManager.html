@@ -1,0 +1,101 @@
+<h1>ModuloManager <span class="badge badge-new">novo arquivo</span></h1>
+
+<div class="audio-player" data-src="audio/ModuloManager.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Responsável por registrar todas as actions do módulo no framework e definir a chave de permissão de acesso.</p>
+
+<pre><code class="language-java">package br.xt.app.modulo;
+
+import br.xt.app.painel.PnlManager;
+
+public class ModuloManager extends PnlManager {
+
+    public static String F_ACESSO_MODULO = "XT.PAINEL_CONTROLE.ACESSO_MODULO.MODULO";
+
+    @Override
+    public void config() throws Exception {
+
+        regFun("PAINEL DE CONTROLE", "Acesso ao Módulo", "MÓDULO", F_ACESSO_MODULO);
+
+        regAction(ModuloHome.class);
+        regAction(ModuloHome.Title.class);
+        regAction(ModuloHome.MenuItem.class);
+        regAction(ModuloHome.MenuInicial.class);
+
+    }
+}
+</code></pre>
+
+<h2 data-nav="public class"><code>public class ModuloManager extends PnlManager</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>public</code></td><td>A classe é visível para todo o projeto — outros pacotes como <code>RootManager</code> precisam instanciá-la, então não pode ser privada ou de pacote</td></tr>
+    <tr><td><code>class</code></td><td>Declara que isso é uma classe Java — o bloco que agrupa os dados e comportamentos do manager</td></tr>
+    <tr><td><code>ModuloManager</code></td><td>Nome da classe. Convenção do projeto: prefixo do módulo + <code>Manager</code></td></tr>
+    <tr><td><code>extends PnlManager</code></td><td>Herda de <code>PnlManager</code>, que fornece os métodos <code>regAction()</code> e <code>regFun()</code>. Sem essa herança não haveria como registrar actions nem permissões</td></tr>
+</table>
+</div>
+
+<h2 data-nav="F_ACESSO_MODULO"><code>public static String F_ACESSO_MODULO = "XT.PAINEL_CONTROLE.ACESSO_MODULO.MODULO"</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>public</code></td><td>Visível fora da classe — necessário porque <code>HomeDesk</code> e outros arquivos leem essa constante diretamente via <code>ModuloManager.F_ACESSO_MODULO</code></td></tr>
+    <tr><td><code>static</code></td><td>Pertence à classe, não a uma instância. Permite usar <code>ModuloManager.F_ACESSO_MODULO</code> sem precisar criar um <code>new ModuloManager()</code></td></tr>
+    <tr><td><code>String</code></td><td>Tipo do valor — é uma cadeia de texto, não um número ou objeto</td></tr>
+    <tr><td><code>F_ACESSO_MODULO</code></td><td>Nome da constante. Convenção do projeto: prefixo <code>F_</code> indica funcionalidade de permissão. Maiúsculas porque é uma constante</td></tr>
+    <tr><td><code>"XT.PAINEL_CONTROLE.ACESSO_MODULO.MODULO"</code></td><td>Chave única de permissão no sistema. O formato de pontos é uma hierarquia: <code>XT</code> (sistema) → <code>PAINEL_CONTROLE</code> (área) → <code>ACESSO_MODULO</code> (tipo) → <code>MODULO</code> (este módulo). Deve ser único no sistema inteiro — dois módulos com a mesma chave compartilhariam a permissão</td></tr>
+</table>
+</div>
+
+<h2 data-nav="@Override"><code>@Override</code></h2>
+<p>Informa ao compilador que este método existe na classe pai (<code>PnlManager</code>) e está sendo substituído aqui. Se o nome do método estiver errado, o compilador avisa. Não é obrigatório, mas é boa prática.</p>
+
+<h2 data-nav="config()"><code>public void config() throws Exception</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>public</code></td><td>O <code>RootManager</code> chama <code>new ModuloManager().config()</code> de fora da classe — precisa ser público</td></tr>
+    <tr><td><code>void</code></td><td>O método não retorna nenhum valor — só executa os registros</td></tr>
+    <tr><td><code>config()</code></td><td>Nome definido pela interface do Jasap. O framework chama esse método para inicializar o manager</td></tr>
+    <tr><td><code>throws Exception</code></td><td>Declara que o método pode lançar exceções. O Jasap exige isso porque os métodos internos de registro podem falhar</td></tr>
+</table>
+</div>
+
+<h2 data-nav="regFun()"><code>regFun("PAINEL DE CONTROLE", "Acesso ao Módulo", "MÓDULO", F_ACESSO_MODULO)</code></h2>
+<p>Registra a permissão no sistema de controle de acesso. Cria a entrada visível no Painel de Controle onde o admin pode liberar ou bloquear o acesso por usuário.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Parâmetro</th><th>O que é</th></tr>
+    <tr><td><code>"PAINEL DE CONTROLE"</code></td><td>Grupo onde a permissão aparece no Painel de Controle</td></tr>
+    <tr><td><code>"Acesso ao Módulo"</code></td><td>Sub-grupo dentro do grupo</td></tr>
+    <tr><td><code>"MÓDULO"</code></td><td>Nome exibido para o admin ao configurar permissões</td></tr>
+    <tr><td><code>F_ACESSO_MODULO</code></td><td>A chave única que identifica essa permissão no sistema</td></tr>
+</table>
+</div>
+
+<h2 data-nav="regAction()"><code>regAction(ModuloHome.class)</code></h2>
+<p>Registra cada action no Jasap. Sem esse registro, o framework não conhece a action e não roteia nenhuma requisição para ela — é como se a classe não existisse para o sistema.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Parte</th><th>O que significa</th></tr>
+    <tr><td><code>regAction</code></td><td>Método herdado de <code>PnlManager</code> que adiciona a action ao mapa interno do Jasap</td></tr>
+    <tr><td><code>ModuloHome.class</code></td><td>Referência à classe Java em tempo de compilação. O <code>.class</code> retorna o objeto <code>Class&lt;?&gt;</code> que representa a classe — o Jasap usa isso para instanciar a action quando uma requisição chegar</td></tr>
+</table>
+</div>
+<p>Cada inner class de <code>ModuloHome</code> também precisa ser registrada separadamente — <code>Title</code>, <code>MenuItem</code> e <code>MenuInicial</code> são actions independentes com suas próprias URLs no framework.</p>
+

@@ -1,0 +1,13 @@
+<h1>RootManager <span class="badge badge-edit">editado</span></h1>
+<p>Ponto de inicialização de toda a aplicação. Adicionar a chamada ao <code>ModuloManager</code> para que o framework conheça o módulo.</p>
+
+<pre><code class="language-java">// Adicionar o import:
+import br.xt.app.modulo.ModuloManager;
+
+// Adicionar dentro de config():
+new ModuloManager().config();
+</code></pre>
+
+<h2>Por que é necessário</h2>
+<p>Sem essa linha, o <code>ModuloManager.config()</code> nunca é executado — nenhum <code>regAction()</code> é chamado e o módulo inteiro é invisível para o Jasap. Nenhuma requisição chegaria a ser roteada para suas actions.</p>
+

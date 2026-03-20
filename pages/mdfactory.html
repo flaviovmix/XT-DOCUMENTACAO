@@ -1,0 +1,34 @@
+<h1>ModuloMdFactory <span class="badge badge-new">novo</span></h1>
+<p>Centraliza o acesso a todos os Models/DAOs do módulo. Qualquer action do sistema pode acessar os dados via <code>getFactory().modulo().xxxModel()</code>, sem instanciar o model diretamente.</p>
+
+<pre><code class="language-java">package br.xt.app.modulo;
+
+import br.jasap.core.AppManager;
+
+public class ModuloMdFactory {
+
+    protected AppManager manager = null;
+
+    public ModuloMdFactory() {
+    }
+
+    public ModuloMdFactory(AppManager manager) {
+        this.manager = manager;
+    }
+
+    public AppManager getManager() {
+        return manager;
+    }
+
+}
+</code></pre>
+
+<h2>Como cresce</h2>
+<p>Conforme entidades forem criadas, os models são adicionados aqui com o padrão lazy init:</p>
+<pre><code class="language-java">private ModuloXxxModel xxxModel = null;
+public ModuloXxxModel xxxModel() {
+    if (xxxModel == null) xxxModel = new ModuloXxxModel(manager);
+    return xxxModel;
+}
+</code></pre>
+

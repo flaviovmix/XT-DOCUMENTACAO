@@ -1,0 +1,20 @@
+<h1>HomeDesk <span class="badge badge-edit">editado</span></h1>
+<p>Monta o menu lateral do sistema (tela inicial após o login). Adicionar a entrada do módulo para que ele apareça no menu principal.</p>
+
+<pre><code class="language-java">// Adicionar os imports:
+import br.xt.app.modulo.ModuloHome;
+import br.xt.app.modulo.ModuloManager;
+
+// Adicionar dentro de menuDesk():
+m.add(ok(ModuloManager.F_ACESSO_MODULO),
+        "MÓDULO",
+        link(ModuloHome.class).childWindow("__WD_XT_MODULO"),
+        null).setImage("res/ico/mn_cto_clientes.png");
+</code></pre>
+
+<h2><code>ok(ModuloManager.F_ACESSO_MODULO)</code></h2>
+<p>Verifica se o usuário logado tem permissão para acessar o módulo. Se não tiver, o item simplesmente não aparece no menu — sem erro, sem mensagem.</p>
+
+<h2><code>childWindow("__WD_XT_MODULO")</code></h2>
+<p>Abre o módulo em uma janela filha dedicada. Se o usuário clicar novamente no item, a janela já existente é reutilizada — não abre duplicada.</p>
+
