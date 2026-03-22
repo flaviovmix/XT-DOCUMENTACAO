@@ -1,6 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModuloManager — XT - Treinamento</title>
+    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
+    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="../css/docs.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+    <button id="hamburger" onclick="toggleDrawer()">
+        <span></span><span></span><span></span>
+    </button>
+    <a id="topbar-title" href="../index.html">XT - Treinamento</a>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
+    </div>
+
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+<!-- DRAWER -->
+<div id="drawer">
+<div id="drawer-inner">
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            NOVO MODULO
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item active" href="ModuloManager.html">1º — ModuloManager</a>
+            <a class="menu-item" href="ModuloHome.html">2º — ModuloHome</a>
+            <a class="menu-item" href="ModuloMdFactory.html">3º — ModuloMdFactory</a>
+            <a class="menu-item" href="RootManager.html">4º — RootManager</a>
+            <a class="menu-item" href="AppsRootModelFactory.html">5º — AppsRootModelFactory</a>
+            <a class="menu-item" href="PnlCfg.html">6º — PnlCfg</a>
+            <a class="menu-item" href="HomeDesk.html">7º — HomeDesk</a>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+<div id="content-inner">
+
 <h1>ModuloManager <span class="badge badge-new">novo arquivo</span></h1>
 
-<div class="audio-player" data-src="audio/ModuloManager.m4a">
+<div class="audio-player" data-src="../audio/ModuloManager.m4a">
     <audio preload="metadata"></audio>
     <button class="audio-btn" title="Play / Pause"></button>
     <div class="audio-progress-wrap">
@@ -9,7 +65,6 @@
     </div>
     <span class="audio-time">0:00 / 0:00</span>
 </div>
-
 <p>Responsável por registrar todas as actions do módulo no framework e definir a chave de permissão de acesso.</p>
 
 <pre><code class="language-java">package br.xt.app.modulo;
@@ -34,7 +89,7 @@ public class ModuloManager extends PnlManager {
 }
 </code></pre>
 
-<h2 data-nav="public class"><code>public class ModuloManager extends PnlManager</code></h2>
+<h2 data-nav="public class"><code class="explicacao">public class ModuloManager extends PnlManager</code></h2>
 
 <div class="table-wrap">
 <table>
@@ -46,7 +101,7 @@ public class ModuloManager extends PnlManager {
 </table>
 </div>
 
-<h2 data-nav="F_ACESSO_MODULO"><code>public static String F_ACESSO_MODULO = "XT.PAINEL_CONTROLE.ACESSO_MODULO.MODULO"</code></h2>
+<h2 data-nav="F_ACESSO_MODULO"><code class="explicacao">public static String F_ACESSO_MODULO = "XT.PAINEL_CONTROLE.ACESSO_MODULO.MODULO"</code></h2>
 
 <div class="table-wrap">
 <table>
@@ -59,10 +114,10 @@ public class ModuloManager extends PnlManager {
 </table>
 </div>
 
-<h2 data-nav="@Override"><code>@Override</code></h2>
+<h2 data-nav="@Override"><code class="explicacao">@Override</code></h2>
 <p>Informa ao compilador que este método existe na classe pai (<code>PnlManager</code>) e está sendo substituído aqui. Se o nome do método estiver errado, o compilador avisa. Não é obrigatório, mas é boa prática.</p>
 
-<h2 data-nav="config()"><code>public void config() throws Exception</code></h2>
+<h2 data-nav="config()"><code class="explicacao">public void config() throws Exception</code></h2>
 
 <div class="table-wrap">
 <table>
@@ -74,7 +129,7 @@ public class ModuloManager extends PnlManager {
 </table>
 </div>
 
-<h2 data-nav="regFun()"><code>regFun("PAINEL DE CONTROLE", "Acesso ao Módulo", "MÓDULO", F_ACESSO_MODULO)</code></h2>
+<h2 data-nav="regFun()"><code class="explicacao">regFun("PAINEL DE CONTROLE", "Acesso ao Módulo", "MÓDULO", F_ACESSO_MODULO)</code></h2>
 <p>Registra a permissão no sistema de controle de acesso. Cria a entrada visível no Painel de Controle onde o admin pode liberar ou bloquear o acesso por usuário.</p>
 
 <div class="table-wrap">
@@ -87,7 +142,7 @@ public class ModuloManager extends PnlManager {
 </table>
 </div>
 
-<h2 data-nav="regAction()"><code>regAction(ModuloHome.class)</code></h2>
+<h2 data-nav="regAction()"><code class="explicacao">regAction(ModuloHome.class)</code></h2>
 <p>Registra cada action no Jasap. Sem esse registro, o framework não conhece a action e não roteia nenhuma requisição para ela — é como se a classe não existisse para o sistema.</p>
 
 <div class="table-wrap">
@@ -99,3 +154,70 @@ public class ModuloManager extends PnlManager {
 </div>
 <p>Cada inner class de <code>ModuloHome</code> também precisa ser registrada separadamente — <code>Title</code>, <code>MenuItem</code> e <code>MenuInicial</code> são actions independentes com suas próprias URLs no framework.</p>
 
+</div>
+
+<div id="footer">
+    <div id="footer-inner">
+        <div>
+            <h3>NOVO MODULO</h3>
+            <a href="ModuloManager.html">ModuloManager</a>
+            <a href="ModuloHome.html">ModuloHome</a>
+            <a href="ModuloMdFactory.html">ModuloMdFactory</a>
+            <a href="RootManager.html">RootManager</a>
+            <a href="AppsRootModelFactory.html">AppsRootModelFactory</a>
+            <a href="PnlCfg.html">PnlCfg</a>
+            <a href="HomeDesk.html">HomeDesk</a>
+        </div>
+        <div>
+            <h3>Conceitos</h3>
+            <a href="#">O que é uma Action</a>
+            <a href="#">O que é um Manager</a>
+            <a href="#">O que é um DAO</a>
+            <a href="#">O que é um Bean</a>
+            <a href="#">Fluxo de uma requisição</a>
+        </div>
+        <div>
+            <h3>Padrões</h3>
+            <a href="#">Nomenclatura de arquivos</a>
+            <a href="#">Constante ROOT</a>
+            <a href="#">Campo qs_xxx</a>
+            <a href="#">LinkBox e FK</a>
+            <a href="#">Detail e N-N</a>
+        </div>
+        <div>
+            <h3>Referências</h3>
+            <a href="#">CLAUDE.md</a>
+            <a href="#">Jasap — código-fonte</a>
+            <a href="#">app — modelo</a>
+            <a href="#">Banco PRD_ZERO</a>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</div> <!-- layout -->
+
+<script src="../js/docs.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const inner = document.getElementById('content-inner');
+    highlightAll(inner);
+    initCopyButtons(inner);
+    initAudioPlayers(inner);
+
+    if (localStorage.getItem('drawerOpen') === 'true') {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('hamburger').classList.add('open');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('theme-toggle').innerHTML = '&#9790;';
+        document.getElementById('hljs-light').disabled = true;
+        document.getElementById('hljs-dark').disabled  = false;
+    }
+});
+</script>
+
+</body>
+</html>

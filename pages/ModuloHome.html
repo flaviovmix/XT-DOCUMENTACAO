@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModuloHome — XT - Treinamento</title>
+    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
+    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="../css/docs.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+    <button id="hamburger" onclick="toggleDrawer()">
+        <span></span><span></span><span></span>
+    </button>
+    <a id="topbar-title" href="../index.html">XT - Treinamento</a>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
+    </div>
+
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+<!-- DRAWER -->
+<div id="drawer">
+<div id="drawer-inner">
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            NOVO MODULO
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="ModuloManager.html">1º — ModuloManager</a>
+            <a class="menu-item active" href="ModuloHome.html">2º — ModuloHome</a>
+            <a class="menu-item" href="ModuloMdFactory.html">3º — ModuloMdFactory</a>
+            <a class="menu-item" href="RootManager.html">4º — RootManager</a>
+            <a class="menu-item" href="AppsRootModelFactory.html">5º — AppsRootModelFactory</a>
+            <a class="menu-item" href="PnlCfg.html">6º — PnlCfg</a>
+            <a class="menu-item" href="HomeDesk.html">7º — HomeDesk</a>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+<div id="content-inner">
+
+<h1>ModuloHome <span class="badge badge-new">novo arquivo</span></h1>
+
+<div class="audio-player" data-src="../audio/ModuloHome.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Tela inicial do módulo. Controla a navegação lateral (sidebar), o breadcrumb do header e o roteamento entre as entidades via parâmetro <code>MID</code>. É a primeira action instanciada quando o usuário abre o módulo.</p>
+
+<pre><code class="language-java">package br.xt.app.modulo;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.SideMenu;
+import br.jasap.gui.Table;
+import br.jasap.gui.TableRow;
+import br.jasap.util.Js;
+import br.xt.AppsRootAction;
+import br.xt.acore.view.XtPage;
+
+public class ModuloHome extends AppsRootAction {
+
+    public static final String MID = "__MOD_MID";
+
+    @Override
+    public Effect execute() throws Exception {
+        render();
+        return new Response();
+    }
+
+    public void render() throws Exception {
+        XtPage page = new XtPage(getManager());
+        if (isAjaxCall()) {
+            eval(Js.CLOSE_SUB_WINDOWS);
+        } else {
+            page.getBody().append(page.content("", "", false));
+            page.setWinTitle("Módulo");
+            page.getCommands().add(link(MenuItem.class).putInteger(MID, 0).ajax());
+            getOutput().write(this, page);
+        }
+    }
+
+    public static class Title extends ModuloHome {
+        @Override
+        public Effect execute() throws Exception {
+            int mid = getInput().getInteger(MID, 0);
+
+            Table aux = new Table(getManager());
+            TableRow line = aux.row();
+
+            line.col().setStyle("padding: 0 5 0 5;").setContent(ui().btTitleActive("MÓDULO", ""));
+
+            update(JasapPage.DIV_HEADER_LEFT, aux);
+            update(JasapPage.DIV_HEADER_CENTER, "");
+            return new Response();
+        }
+    }
+
+    public static class MenuItem extends ModuloHome {
+        @Override
+        public Effect execute() throws Exception {
+            int mid = getInput().getInteger(MID, 0);
+
+            if (mid > 0) {
+                eval(link(Title.class).putInteger(MID, mid).ajax());
+                eval(link(Title.class).putInteger(MID, mid).ajax(false));
+            } else {
+                eval(link(MenuInicial.class).ajax(false));
+                eval(link(Title.class).putInteger(MID, mid).ajax(false));
+            }
+
+            return new Response();
+        }
+    }
+
+    public static class MenuInicial extends ModuloHome {
+        @Override
+        public Effect execute() throws Exception {
+            SideMenu m = new SideMenu();
+
+            update("sidebar", m.toHtml());
+            return new Response();
+        }
+    }
+
+}
+</code></pre>
+
+<h2 data-nav="public class"><code class="explicacao">public class ModuloHome extends AppsRootAction</code></h2>
+
+<pre><code class="language-java">public class ModuloHome extends AppsRootAction {
+
+    public static final String MID = "__MOD_MID";
+
+}</code></pre>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>ModuloHome</code></td><td>Nome da classe. Em Java, o nome identifica o arquivo e o papel que ele desempenha no sistema. Convenção do projeto: prefixo do módulo + <code>Home</code>. É a tela raiz — o ponto de entrada quando o usuário abre o módulo</td></tr>
+    <tr><td><code>extends AppsRootAction</code></td><td><em>Herança</em> em Java significa que esta classe recebe todos os recursos de <code>AppsRootAction</code> sem precisar reescrevê-los. É como herdar ferramentas de um pai: <code>ui()</code>, <code>link()</code>, <code>eval()</code>, <code>update()</code>, <code>getInput()</code>, <code>getManager()</code> e todos os métodos do framework ficam disponíveis automaticamente. Sem esse <code>extends</code>, nenhum desses métodos existiria nesta classe</td></tr>
+</table>
+</div>
+
+<h2 data-nav="MID"><code class="explicacao">public static final String MID = "__MOD_MID"</code></h2>
+
+<pre><code class="language-java">public static final String MID = "__MOD_MID";</code></pre>
+
+<p>Quando o usuário clica em um item do menu lateral, o sistema precisa saber o que foi clicado. Para isso, cada item do menu envia um número junto com a requisição — esse número é o <code>MID</code>. A constante <code>MID</code> guarda o nome da chave usada para transportar esse número entre o browser e o servidor.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>public</code></td><td>Visível para outras classes. Necessário porque outras actions precisam ler o valor de <code>MID</code> para montar links com esse parâmetro</td></tr>
+    <tr><td><code>static</code></td><td>Pertence à classe, não a um objeto criado dela. Permite usar <code>ModuloHome.MID</code> diretamente, sem precisar instanciar a classe</td></tr>
+    <tr><td><code>final</code></td><td>O valor não pode ser alterado depois de definido. Garante que ninguém acidentalmente sobrescreva a chave durante a execução</td></tr>
+    <tr><td><code>MID</code></td><td>Abreviação de <em>Menu ID</em>. Identifica qual item do menu lateral foi clicado</td></tr>
+    <tr><td><code>"__MOD_MID"</code></td><td>O texto que viaja na requisição HTTP como nome do parâmetro. O prefixo <code>__</code> e o sufixo do módulo evitam conflito com parâmetros de outros módulos que possam existir na mesma sessão</td></tr>
+</table>
+</div>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Valor de MID</th><th>O que abre</th></tr>
+    <tr><td><code>0</code></td><td>Menu inicial — exibe o sidebar. Conforme entidades forem adicionadas ao módulo, os itens aparecerão aqui</td></tr>
+    <tr><td><code>1, 2, 3…</code></td><td>Cada entidade adicionada ao módulo receberá um MID. O <code>switch(mid)</code> em <code>MenuItem</code> decidirá qual tela abrir</td></tr>
+</table>
+</div>
+
+<h2 data-nav="render()"><code class="explicacao">render()</code></h2>
+
+<pre><code class="language-java">@Override
+public Effect execute() throws Exception {
+    render();
+    return new Response();
+}
+
+public void render() throws Exception {
+    XtPage page = new XtPage(getManager());
+    if (isAjaxCall()) {
+        eval(Js.CLOSE_SUB_WINDOWS);
+    } else {
+        page.getBody().append(page.content("", "", false));
+        page.setWinTitle("Módulo");
+        page.getCommands().add(link(MenuItem.class).putInteger(MID, 0).ajax());
+        getOutput().write(this, page);
+    }
+}</code></pre>
+
+<p>Todo método <code>execute()</code> no Jasap é obrigatório — é ele que o framework chama quando uma requisição chega. Aqui ele apenas delega para <code>render()</code>. Essa separação existe por um motivo prático: as inner classes <code>Title</code>, <code>MenuItem</code> e <code>MenuInicial</code> às vezes precisam re-renderizar a home. Com <code>render()</code> separado, elas chamam esse método diretamente sem duplicar código.</p>
+
+<p>O <code>render()</code> lida com dois cenários distintos:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Situação</th><th>O que acontece</th></tr>
+    <tr><td>Primeira abertura do módulo</td><td>O browser ainda não tem a página. O servidor monta o HTML completo (estrutura, CSS, JS) e envia tudo de uma vez</td></tr>
+    <tr><td>Usuário já está no módulo e navega de volta ao home</td><td>A página já existe no browser. Não faz sentido reenviar tudo — só é necessário fechar janelas que estejam abertas por cima</td></tr>
+</table>
+</div>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Trecho</th><th>O que faz</th></tr>
+    <tr><td><code>new XtPage(getManager())</code></td><td>Cria o objeto que representa a página HTML. <code>XtPage</code> já inclui todos os CSS e JS do projeto. O <code>getManager()</code> informa qual módulo está sendo carregado — o Jasap usa isso para saber quais actions estão disponíveis</td></tr>
+    <tr><td><code>isAjaxCall()</code></td><td>Verifica se a requisição veio de um clique dentro da aplicação (Ajax) ou de uma abertura direta no browser. Retorna <code>true</code> para Ajax</td></tr>
+    <tr><td><code>eval(Js.CLOSE_SUB_WINDOWS)</code></td><td>Envia um comando JavaScript ao browser para fechar todos os modais abertos. Sem isso, o usuário voltaria ao home mas ainda veria formulários ou listas sobrepostos na tela</td></tr>
+    <tr><td><code>page.content("", "", false)</code></td><td>Define a estrutura da página: cria o sidebar vazio (<code>#sidebar</code>), o header (navbar) e a área de conteúdo. Os parâmetros vazios indicam que o conteúdo será preenchido depois por Ajax — a página abre com a estrutura pronta mas sem dados</td></tr>
+    <tr><td><code>page.setWinTitle("Módulo")</code></td><td>Define o texto que aparece na aba do navegador</td></tr>
+    <tr><td><code>page.getCommands().add(...)</code></td><td>Registra um comando que será executado automaticamente assim que a página terminar de carregar no browser. Aqui dispara <code>MenuItem</code> com <code>MID=0</code> — sem isso a página abriria com o sidebar completamente vazio</td></tr>
+    <tr><td><code>getOutput().write(this, page)</code></td><td>Finaliza e envia a página como resposta HTTP ao browser. Só é chamado na abertura inicial — nas chamadas Ajax, o conteúdo é atualizado por partes via <code>eval()</code> e <code>update()</code></td></tr>
+</table>
+</div>
+
+<h2 data-nav="Title"><code class="explicacao">Title</code></h2>
+
+<pre><code class="language-java">public static class Title extends ModuloHome {
+    @Override
+    public Effect execute() throws Exception {
+        int mid = getInput().getInteger(MID, 0);
+
+        Table aux = new Table(getManager());
+        TableRow line = aux.row();
+
+        line.col().setStyle("padding: 0 5 0 5;").setContent(ui().btTitleActive("MÓDULO", ""));
+
+        update(JasapPage.DIV_HEADER_LEFT, aux);
+        update(JasapPage.DIV_HEADER_CENTER, "");
+        return new Response();
+    }
+}</code></pre>
+
+<p>Responsável por atualizar o breadcrumb no topo da tela — a "trilha de navegação" que indica onde o usuário está. É uma <em>inner class</em>: definida dentro de <code>ModuloHome</code>, mas tratada pelo Jasap como uma action independente com sua própria URL. Por estender <code>ModuloHome</code>, tem acesso direto à constante <code>MID</code> e a todos os métodos do framework.</p>
+
+<p>No estado atual do módulo — sem entidades registradas — o breadcrumb exibe sempre "MÓDULO" como texto fixo, sem link. Quando entidades forem adicionadas, um <code>if (mid == 0)</code> será introduzido aqui: no menu inicial continuará com <code>btTitleActive</code>; dentro de uma entidade, "MÓDULO" virará link clicável via <code>btTitle</code> e o nome da entidade aparecerá ao lado.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Trecho</th><th>O que faz</th></tr>
+    <tr><td><code>getInput().getInteger(MID, 0)</code></td><td>Lê o número <code>MID</code> que veio na requisição. O segundo argumento (<code>0</code>) é o valor padrão caso o parâmetro não venha — evita <code>NullPointerException</code>. O valor é lido mas ainda não usado para lógica condicional; está presente para quando as entidades forem adicionadas</td></tr>
+    <tr><td><code>new Table(getManager())</code></td><td>O Jasap não aceita HTML direto no header — exige componentes de layout. <code>Table</code> e <code>TableRow</code> geram a estrutura que o <code>DIV_HEADER_LEFT</code> espera receber</td></tr>
+    <tr><td><code>ui().btTitleActive("MÓDULO", "")</code></td><td>Cria o botão de breadcrumb no estado ativo — texto sem link. O segundo parâmetro vazio confirma que não há ação ao clicar. É o estado fixo enquanto o módulo ainda não tem entidades</td></tr>
+    <tr><td><code>update(DIV_HEADER_LEFT, aux)</code></td><td>Substitui o conteúdo do header esquerdo pelo breadcrumb montado. O Jasap atualiza apenas esse pedaço da tela — o resto continua intacto</td></tr>
+    <tr><td><code>update(DIV_HEADER_CENTER, "")</code></td><td>Limpa o centro do header. Sem isso, conteúdo colocado ali por outra tela permaneceria visível após a navegação</td></tr>
+</table>
+</div>
+
+<h2 data-nav="MenuItem"><code class="explicacao">MenuItem</code></h2>
+
+<pre><code class="language-java">public static class MenuItem extends ModuloHome {
+    @Override
+    public Effect execute() throws Exception {
+        int mid = getInput().getInteger(MID, 0);
+
+        if (mid > 0) {
+            eval(link(Title.class).putInteger(MID, mid).ajax());
+            eval(link(Title.class).putInteger(MID, mid).ajax(false));
+        } else {
+            eval(link(MenuInicial.class).ajax(false));
+            eval(link(Title.class).putInteger(MID, mid).ajax(false));
+        }
+
+        return new Response();
+    }
+}</code></pre>
+
+<p>É o roteador central do módulo. Todo link do sidebar aponta para <code>MenuItem</code> com um <code>MID</code> diferente. A partir do valor recebido, <code>MenuItem</code> decide o que acontece: abre a tela da entidade ou volta ao menu inicial. Centralizar aqui garante que qualquer item do menu execute sempre a sequência correta — sem repetir lógica em cada link.</p>
+
+<p>O comportamento é dividido em dois casos pelo <code>if (mid > 0)</code>:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Situação</th><th>O que acontece</th></tr>
+    <tr><td><code>mid &gt; 0</code></td><td>Usuário clicou em uma entidade do menu. Quando entidades forem adicionadas, um <code>eval(preAjax(XxxList.class).modalMax())</code> será inserido aqui para abrir a lista. Por enquanto, as duas chamadas a <code>Title</code> preparam o breadcrumb para receber o nome da entidade assim que ela existir</td></tr>
+    <tr><td><code>mid == 0</code></td><td>Usuário voltou ao menu inicial. O sidebar é reconstruído via <code>MenuInicial</code> e o breadcrumb é redefinido via <code>Title</code></td></tr>
+</table>
+</div>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Trecho</th><th>O que faz</th></tr>
+    <tr><td><code>getInput().getInteger(MID, 0)</code></td><td>Lê o número enviado pelo link clicado. Se nenhum <code>MID</code> vier, usa <code>0</code> como padrão — garante que a navegação sempre tenha um valor válido</td></tr>
+    <tr><td><code>eval(link(Title.class)...ajax())</code></td><td>Chama <code>Title</code> imediatamente para atualizar o breadcrumb no mesmo ciclo da requisição</td></tr>
+    <tr><td><code>eval(link(Title.class)...ajax(false))</code></td><td>Agenda uma segunda chamada a <code>Title</code> para após o ciclo atual — garante que o breadcrumb seja atualizado mesmo quando outras ações acontecem em sequência. Quando entidades forem adicionadas, esta linha permanecerá aqui enquanto o <code>preAjax</code> da lista será inserido acima dela</td></tr>
+    <tr><td><code>eval(link(MenuInicial.class).ajax(false))</code></td><td>Reconstrói o sidebar via <code>MenuInicial</code>. O <code>ajax(false)</code> enfileira a execução para depois do ciclo atual</td></tr>
+</table>
+</div>
+
+<h2 data-nav="MenuInicial"><code class="explicacao">MenuInicial</code></h2>
+
+<pre><code class="language-java">public static class MenuInicial extends ModuloHome {
+    @Override
+    public Effect execute() throws Exception {
+        SideMenu m = new SideMenu();
+        update("sidebar", m.toHtml());
+        return new Response();
+    }
+}</code></pre>
+
+<p>O sidebar não é montado junto com a página — ele é carregado separadamente via Ajax, após a página já estar no browser. Isso é necessário porque o sidebar precisa ser atualizado de forma independente: quando o usuário volta ao menu inicial, só o sidebar muda, o restante da tela continua intacto.</p>
+
+<p>Se o sidebar fosse montado dentro do <code>render()</code>, seria impossível atualizá-lo sem recarregar a página inteira.</p>
+
+<p>No estado atual do módulo o <code>SideMenu</code> é criado vazio — ainda não há entidades. Conforme entidades forem adicionadas, cada uma ganhará um <code>m.add(...)</code> aqui.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Trecho</th><th>O que faz</th></tr>
+    <tr><td><code>new SideMenu()</code></td><td>Cria o componente de menu lateral do Jasap. Internamente gera o HTML da sidebar com estilos e comportamento já definidos pelo framework — não é necessário escrever HTML manualmente</td></tr>
+    <tr><td><code>m.add(visivel, label, link, icone)</code></td><td>Quando entidades forem adicionadas: o primeiro parâmetro controla se o item aparece (<code>true/false</code>), o <code>label</code> é o nome exibido, e o <code>link</code> aponta para <code>MenuItem</code> com o <code>MID</code> da entidade</td></tr>
+    <tr><td><code>m.toHtml()</code></td><td>Converte o objeto <code>SideMenu</code> em HTML puro para ser enviado ao browser</td></tr>
+    <tr><td><code>update("sidebar", m.toHtml())</code></td><td>Substitui o conteúdo do elemento com <code>id="sidebar"</code> na tela pelo HTML gerado. O Jasap injeta o novo conteúdo diretamente no DOM, sem recarregar a página</td></tr>
+</table>
+</div>
+
+</div>
+
+<div id="footer">
+    <div id="footer-inner">
+        <div>
+            <h3>NOVO MODULO</h3>
+            <a href="ModuloManager.html">ModuloManager</a>
+            <a href="ModuloHome.html">ModuloHome</a>
+            <a href="ModuloMdFactory.html">ModuloMdFactory</a>
+            <a href="RootManager.html">RootManager</a>
+            <a href="AppsRootModelFactory.html">AppsRootModelFactory</a>
+            <a href="PnlCfg.html">PnlCfg</a>
+            <a href="HomeDesk.html">HomeDesk</a>
+        </div>
+        <div>
+            <h3>Conceitos</h3>
+            <a href="#">O que é uma Action</a>
+            <a href="#">O que é um Manager</a>
+            <a href="#">O que é um DAO</a>
+            <a href="#">O que é um Bean</a>
+            <a href="#">Fluxo de uma requisição</a>
+        </div>
+        <div>
+            <h3>Padrões</h3>
+            <a href="#">Nomenclatura de arquivos</a>
+            <a href="#">Constante ROOT</a>
+            <a href="#">Campo qs_xxx</a>
+            <a href="#">LinkBox e FK</a>
+            <a href="#">Detail e N-N</a>
+        </div>
+        <div>
+            <h3>Referências</h3>
+            <a href="#">CLAUDE.md</a>
+            <a href="#">Jasap — código-fonte</a>
+            <a href="#">app — modelo</a>
+            <a href="#">Banco PRD_ZERO</a>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</div> <!-- layout -->
+
+<script src="../js/docs.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const inner = document.getElementById('content-inner');
+    highlightAll(inner);
+    initCopyButtons(inner);
+    initAudioPlayers(inner);
+
+    if (localStorage.getItem('drawerOpen') === 'true') {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('hamburger').classList.add('open');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('theme-toggle').innerHTML = '&#9790;';
+        document.getElementById('hljs-light').disabled = true;
+        document.getElementById('hljs-dark').disabled  = false;
+    }
+});
+</script>
+
+</body>
+</html>

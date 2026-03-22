@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModuloMdFactory — XT - Treinamento</title>
+    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
+    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="../css/docs.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+    <button id="hamburger" onclick="toggleDrawer()">
+        <span></span><span></span><span></span>
+    </button>
+    <a id="topbar-title" href="../index.html">XT - Treinamento</a>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
+    </div>
+
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+<!-- DRAWER -->
+<div id="drawer">
+<div id="drawer-inner">
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            NOVO MODULO
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="ModuloManager.html">1º — ModuloManager</a>
+            <a class="menu-item" href="ModuloHome.html">2º — ModuloHome</a>
+            <a class="menu-item active" href="ModuloMdFactory.html">3º — ModuloMdFactory</a>
+            <a class="menu-item" href="RootManager.html">4º — RootManager</a>
+            <a class="menu-item" href="AppsRootModelFactory.html">5º — AppsRootModelFactory</a>
+            <a class="menu-item" href="PnlCfg.html">6º — PnlCfg</a>
+            <a class="menu-item" href="HomeDesk.html">7º — HomeDesk</a>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+<div id="content-inner">
+
+<h1>ModuloMdFactory <span class="badge badge-new">novo arquivo</span></h1>
+
+<div class="audio-player" data-src="../audio/ModuloMdFactory.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Centraliza o acesso aos models do módulo. Cada entidade adicionada ao módulo ganha um método aqui — garantindo que cada model seja criado uma única vez por requisição.</p>
+
+<pre><code class="language-java">package br.xt.app.modulo;
+
+import br.jasap.core.AppManager;
+
+public class ModuloMdFactory {
+
+    protected AppManager manager = null;
+
+    public ModuloMdFactory() {
+    }
+
+    public ModuloMdFactory(AppManager manager) {
+        this.manager = manager;
+    }
+
+    public AppManager getManager() {
+        return manager;
+    }
+
+}</code></pre>
+
+<h2 data-nav="public class"><code class="explicacao">public class ModuloMdFactory</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>public</code></td><td>A classe precisa ser visível fora do pacote do módulo — o <code>AppsRootModelFactory</code> a instancia de um pacote diferente para disponibilizá-la a todas as actions do sistema</td></tr>
+    <tr><td><code>class</code></td><td>Uma classe Java comum, sem nada especial além disso</td></tr>
+    <tr><td><code>ModuloMdFactory</code></td><td>Convenção do projeto: prefixo do módulo + <code>MdFactory</code> (abreviação de <em>Model Factory</em>)</td></tr>
+</table>
+</div>
+<p>Ao contrário do <code>ModuloManager</code>, que <code>extends PnlManager</code>, a factory <strong>não herda de nada</strong>. Ela não precisa de nenhum comportamento do framework — é uma classe de organização pura. Seu único trabalho é guardar o <code>manager</code> e entregar os models quando solicitados.</p>
+
+<h2 data-nav="AppManager manager"><code class="explicacao">protected AppManager manager = null</code></h2>
+
+<pre><code class="language-java">protected AppManager manager = null;</code></pre>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>protected</code></td><td>Visível para esta classe e para as subclasses. Os próprios models estendem DAOs que por sua vez recebem o <code>manager</code> — o <code>protected</code> permite esse repasse pela hierarquia sem abrir para o mundo inteiro (<code>public</code>)</td></tr>
+    <tr><td><code>AppManager</code></td><td>Objeto do Jasap que representa o contexto da requisição atual. Por dentro carrega a conexão com o banco de dados, a sessão do usuário e outras informações da requisição. Sem ele, nenhum DAO consegue executar queries</td></tr>
+    <tr><td><code>= null</code></td><td>Começa vazio. Será preenchido pelo construtor que recebe o manager como parâmetro. Se ficar null (construtor vazio for usado), qualquer chamada a banco vai lançar um erro</td></tr>
+</table>
+</div>
+
+<h2 data-nav="construtores"><code class="explicacao">dois construtores</code></h2>
+
+<pre><code class="language-java">public ModuloMdFactory() {
+}
+
+public ModuloMdFactory(AppManager manager) {
+    this.manager = manager;
+}</code></pre>
+
+<p>Java permite que uma classe tenha mais de um construtor, desde que tenham parâmetros diferentes. Isso se chama <strong>sobrecarga de construtor</strong>.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Construtor</th><th>Quando é usado</th></tr>
+    <tr><td><code>ModuloMdFactory()</code></td><td>Construtor vazio — usado pelo <code>AppsRootModelFactory</code> durante a inicialização, antes de ter um <code>manager</code> disponível. O <code>manager</code> pode ser atribuído depois via setter, ou nunca ser usado se a factory for apenas declarada como campo</td></tr>
+    <tr><td><code>ModuloMdFactory(AppManager manager)</code></td><td>O mais importante na prática. Quando uma action chama <code>getFactory().lab()</code>, o Jasap já passou o <code>manager</code> aqui. O <code>this.manager = manager</code> salva o manager recebido no campo da classe para que todos os models criados depois possam usá-lo</td></tr>
+</table>
+</div>
+<p><code>this.manager</code> usa a palavra-chave <code>this</code> para diferenciar o <em>campo da classe</em> (<code>this.manager</code>) do <em>parâmetro do construtor</em> (<code>manager</code>). Sem o <code>this</code>, o Java entenderia que a variável local (parâmetro) está sendo atribuída a ela mesma — o campo continuaria null.</p>
+
+<h2 data-nav="getManager()"><code class="explicacao">public AppManager getManager()</code></h2>
+
+<pre><code class="language-java">public AppManager getManager() {
+    return manager;
+}</code></pre>
+
+<p>Getter simples que expõe o <code>manager</code> armazenado. Usado internamente pelos models quando precisam acessar o banco de dados ou a sessão da requisição. À medida que entidades forem adicionadas ao módulo, novos métodos de model surgirão aqui seguindo o padrão <strong>lazy initialization</strong> — cada model criado uma única vez por requisição, somente quando solicitado.</p>
+
+</div>
+
+<div id="footer">
+    <div id="footer-inner">
+        <div>
+            <h3>NOVO MODULO</h3>
+            <a href="ModuloManager.html">ModuloManager</a>
+            <a href="ModuloHome.html">ModuloHome</a>
+            <a href="ModuloMdFactory.html">ModuloMdFactory</a>
+            <a href="RootManager.html">RootManager</a>
+            <a href="AppsRootModelFactory.html">AppsRootModelFactory</a>
+            <a href="PnlCfg.html">PnlCfg</a>
+            <a href="HomeDesk.html">HomeDesk</a>
+        </div>
+        <div>
+            <h3>Conceitos</h3>
+            <a href="#">O que é uma Action</a>
+            <a href="#">O que é um Manager</a>
+            <a href="#">O que é um DAO</a>
+            <a href="#">O que é um Bean</a>
+            <a href="#">Fluxo de uma requisição</a>
+        </div>
+        <div>
+            <h3>Padrões</h3>
+            <a href="#">Nomenclatura de arquivos</a>
+            <a href="#">Constante ROOT</a>
+            <a href="#">Campo qs_xxx</a>
+            <a href="#">LinkBox e FK</a>
+            <a href="#">Detail e N-N</a>
+        </div>
+        <div>
+            <h3>Referências</h3>
+            <a href="#">CLAUDE.md</a>
+            <a href="#">Jasap — código-fonte</a>
+            <a href="#">app — modelo</a>
+            <a href="#">Banco PRD_ZERO</a>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</div> <!-- layout -->
+
+<script src="../js/docs.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const inner = document.getElementById('content-inner');
+    highlightAll(inner);
+    initCopyButtons(inner);
+    initAudioPlayers(inner);
+
+    if (localStorage.getItem('drawerOpen') === 'true') {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('hamburger').classList.add('open');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('theme-toggle').innerHTML = '&#9790;';
+        document.getElementById('hljs-light').disabled = true;
+        document.getElementById('hljs-dark').disabled  = false;
+    }
+});
+</script>
+
+</body>
+</html>

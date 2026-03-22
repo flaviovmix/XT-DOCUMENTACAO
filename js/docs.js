@@ -50,9 +50,124 @@ const iconPlay  = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white">
         sentinel.style.cssText = 'height:1px;margin-bottom:-1px;';
         player.parentNode.insertBefore(sentinel, player);
 
+        // spacer: substitui o espaço do player no mobile quando ele vira fixed
+        const spacer = document.createElement('div');
+        spacer.style.display = 'none';
+        player.parentNode.insertBefore(spacer, player.nextSibling);
+
         new IntersectionObserver(([entry]) => {
-            player.classList.toggle('audio-player--stuck', !entry.isIntersecting);
+            const stuck = !entry.isIntersecting;
+            player.classList.toggle('audio-player--stuck', stuck);
+            if (window.innerWidth <= 768) {
+                spacer.style.display = stuck ? 'block' : 'none';
+                spacer.style.height   = stuck ? player.offsetHeight + 'px' : '0';
+            }
         }, { rootMargin: '-53px 0px 0px 0px', threshold: 0 }).observe(sentinel);
+    });
+}
+
+function initCopyButtons(container) {
+    const iconCopy = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>`;
+    const iconOk   = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>`;
+
+    container.querySelectorAll('pre').forEach(pre => {
+        const btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.title = 'Copiar';
+        btn.innerHTML = iconCopy;
+        pre.appendChild(btn);
+
+        btn.addEventListener('click', () => {
+            const code = pre.querySelector('code');
+            const text = code ? code.innerText : pre.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                btn.innerHTML = iconOk;
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = iconCopy;
+                    btn.classList.remove('copied');
+                }, 1500);
+            });
+        });
+    });
+}
+
+function initRangeHighlights(container) {
+    container.querySelectorAll('pre code').forEach(code => {
+        const lines = code.innerHTML.split('\n');
+        const result = [];
+        let i = 0;
+
+        while (i < lines.length) {
+            const plain = lines[i].replace(/<[^>]+>/g, '');
+
+            if (plain.includes('// ADICIONAR')) {
+                // Procura // FIM antes do próximo // ADICIONAR
+                let fimIdx = -1;
+                for (let k = i + 1; k < lines.length; k++) {
+                    const kPlain = lines[k].replace(/<[^>]+>/g, '');
+                    if (kPlain.includes('// ADICIONAR')) break;
+                    if (kPlain.includes('// FIM')) { fimIdx = k; break; }
+                }
+
+                const group = [lines[i]];
+                i++;
+
+                if (fimIdx !== -1) {
+                    // Range: coleta até o // FIM (inclusive)
+                    while (i <= fimIdx) { group.push(lines[i]); i++; }
+                } else {
+                    // Sem FIM: coleta até a próxima linha em branco
+                    while (i < lines.length) {
+                        if (lines[i].replace(/<[^>]+>/g, '').trim() === '') break;
+                        group.push(lines[i]);
+                        i++;
+                    }
+                }
+
+                result.push(`<span class="line-add">${group.join('\n')}</span>`);
+            } else {
+                result.push(lines[i]);
+                i++;
+            }
+        }
+
+        code.innerHTML = result.join('\n');
+    });
+}
+
+function initLineHighlights(container) {
+    container.querySelectorAll('pre[data-add]').forEach(pre => {
+        const code = pre.querySelector('code');
+        if (!code) return;
+        const targets = pre.dataset.add.split('|').map(s => s.trim());
+        const lines = code.innerHTML.split('\n');
+
+        const result = [];
+        let i = 0;
+        while (i < lines.length) {
+            const plain = lines[i].replace(/<[^>]+>/g, '');
+            const match = targets.some(t => plain.includes(t));
+            if (match) {
+                const group = [lines[i]];
+                let j = i + 1;
+                while (j < lines.length) {
+                    const nextPlain = lines[j].replace(/<[^>]+>/g, '');
+                    if (targets.some(t => nextPlain.includes(t))) {
+                        group.push(lines[j]);
+                        j++;
+                    } else {
+                        break;
+                    }
+                }
+                result.push(`<span class="line-add">${group.join('\n')}</span>`);
+                i = j;
+            } else {
+                result.push(lines[i]);
+                i++;
+            }
+        }
+        code.innerHTML = result.join('\n');
     });
 }
 
@@ -128,6 +243,52 @@ function highlightAll(container) {
 
         block.innerHTML = html;
     });
+}
+
+function initTopnav(inner) {
+    const topnav = document.getElementById('topnav');
+    if (!topnav) return;
+    topnav.classList.remove('visible');
+    topnav.innerHTML = '';
+
+    const topoLink = document.createElement('a');
+    topoLink.href = '#';
+    topoLink.textContent = '↑ início';
+    topoLink.addEventListener('click', e => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    topnav.appendChild(topoLink);
+
+    const headings = inner.querySelectorAll('h2');
+    headings.forEach((h, i) => {
+        if (!h.id) h.id = 'nav-' + i;
+        const a = document.createElement('a');
+        a.href = '#' + h.id;
+        const text = h.textContent.trim();
+        a.textContent = h.dataset.nav || (text.length > 24 ? text.slice(0, 24) + '…' : text);
+        a.title = text;
+        topnav.appendChild(a);
+    });
+
+    if (headings.length > 0) {
+        setTimeout(() => {
+            topnav.classList.add('visible');
+            if (window.innerWidth <= 768) document.body.classList.add('has-topnav');
+        }, 50);
+
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const isH1 = entry.target.tagName === 'H1';
+                    topnav.querySelectorAll('a').forEach(a => {
+                        a.classList.toggle('active', !isH1 && a.getAttribute('href') === '#' + entry.target.id);
+                    });
+                }
+            });
+        }, { rootMargin: '-52px 0px -70% 0px', threshold: 0 });
+
+        const h1 = inner.querySelector('h1');
+        if (h1) { h1.id = h1.id || 'page-top'; observer.observe(h1); }
+        headings.forEach(h => observer.observe(h));
+    }
 }
 
 async function show(id, el) {
@@ -223,15 +384,36 @@ document.addEventListener('click', function(e) {
 
 function toggleDrawer() {
     const drawer = document.getElementById('drawer');
-    drawer.classList.toggle('open');
+    const isOpen = drawer.classList.toggle('open');
     document.getElementById('hamburger').classList.toggle('open');
-    localStorage.setItem('drawerOpen', drawer.classList.contains('open'));
+    localStorage.setItem('drawerOpen', isOpen);
+
+    if (window.innerWidth <= 768) {
+        let overlay = document.getElementById('drawer-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'drawer-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:149;';
+            overlay.addEventListener('click', () => toggleDrawer());
+            document.body.appendChild(overlay);
+        }
+        overlay.style.display = isOpen ? 'block' : 'none';
+    }
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('drawerOpen') === 'true') {
         document.getElementById('drawer').classList.add('open');
         document.getElementById('hamburger').classList.add('open');
+        if (window.innerWidth <= 768) {
+            const overlay = document.createElement('div');
+            overlay.id = 'drawer-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:149;';
+            overlay.addEventListener('click', () => toggleDrawer());
+            document.body.appendChild(overlay);
+            overlay.style.display = 'block';
+        }
     }
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark');

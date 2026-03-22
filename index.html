@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentação XTzero</title>
-    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
-    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <title>XT - Treinamento</title>
     <link rel="stylesheet" href="css/docs.css">
 </head>
 <body>
@@ -16,25 +13,11 @@
     <button id="hamburger" onclick="toggleDrawer()">
         <span></span><span></span><span></span>
     </button>
-    <a id="topbar-title" href="index.html">XTzero Docs</a>
+    <a id="topbar-title" href="index.html">XT - Treinamento</a>
 
     <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
-        <button onclick="changeZoom(-0.1)" title="Diminuir zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.3em;padding:4px 8px;border-radius:4px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#x2212;</button>
-        <span id="zoom-label" onclick="toggleZoomMenu()" title="Opções de zoom" style="color:#888;font-size:0.8em;min-width:36px;text-align:center;cursor:pointer;position:relative;">100%
-            <div id="zoom-menu" style="display:none;position:absolute;top:28px;left:50%;transform:translateX(-50%);background:#1e1e2e;border:1px solid #313244;border-radius:6px;overflow:hidden;z-index:300;min-width:80px;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
-                <div onclick="setZoom(0.75)" style="padding:8px 16px;font-size:0.95em;color:#cdd6f4;cursor:pointer;" onmouseover="this.style.background='#313244'" onmouseout="this.style.background='transparent'">75%</div>
-                <div onclick="setZoom(1)"    style="padding:8px 16px;font-size:0.95em;color:#cdd6f4;cursor:pointer;" onmouseover="this.style.background='#313244'" onmouseout="this.style.background='transparent'">100%</div>
-                <div onclick="setZoom(1.25)" style="padding:8px 16px;font-size:0.95em;color:#cdd6f4;cursor:pointer;" onmouseover="this.style.background='#313244'" onmouseout="this.style.background='transparent'">125%</div>
-                <div onclick="setZoom(1.5)"  style="padding:8px 16px;font-size:0.95em;color:#cdd6f4;cursor:pointer;" onmouseover="this.style.background='#313244'" onmouseout="this.style.background='transparent'">150%</div>
-                <div onclick="setZoom(1.75)" style="padding:8px 16px;font-size:0.95em;color:#cdd6f4;cursor:pointer;" onmouseover="this.style.background='#313244'" onmouseout="this.style.background='transparent'">175%</div>
-                <div onclick="setZoom(2)"    style="padding:8px 16px;font-size:0.95em;color:#cdd6f4;cursor:pointer;" onmouseover="this.style.background='#313244'" onmouseout="this.style.background='transparent'">200%</div>
-            </div>
-        </span>
-        <button onclick="changeZoom(0.1)" title="Aumentar zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.3em;padding:4px 8px;border-radius:4px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#x2B;</button>
         <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
     </div>
-
-    <div id="topnav"></div>
 </div>
 
 <!-- LAYOUT -->
@@ -46,16 +29,15 @@
 
     <div class="menu-group">
         <div class="menu-group-header" onclick="toggleGroup(this)">
-            Exibindo no Menu
+            NOVO MODULO
             <span class="menu-group-arrow">&#9660;</span>
         </div>
         <div class="menu-group-items">
-            <a class="menu-item" data-page="ModuloManager" onclick="show('ModuloManager', this)">1º — ModuloManager</a>
-            <a class="menu-item" data-page="home" onclick="show('home', this)">2º — ModuloHome</a>
-            <a class="menu-item" data-page="mdfactory" onclick="show('mdfactory', this)">3º — ModuloMdFactory</a>
-            <a class="menu-item" data-page="rootmanager" onclick="show('rootmanager', this)">4º — RootManager</a>
-            <a class="menu-item" data-page="rootfactory" onclick="show('rootfactory', this)">5º — AppsRootModelFactory</a>
-            <a class="menu-item" data-page="homedesk" onclick="show('homedesk', this)">6º — HomeDesk</a>
+            <a class="menu-item" href="pages/ModuloManager.html">1º — ModuloManager</a>
+            <a class="menu-item" href="pages/ModuloHome.html">2º — ModuloHome</a>
+            <a class="menu-item" href="pages/ModuloMdFactory.html">3º — ModuloMdFactory</a>
+            <a class="menu-item" href="pages/RootManager.html">4º — RootManager</a>
+            <a class="menu-item" href="pages/AppsRootModelFactory.html">5º — AppsRootModelFactory</a>
         </div>
     </div>
 
@@ -64,126 +46,99 @@
 
 <!-- CONTENT -->
 <div id="content">
-    <div id="content-inner">
+<div id="content-inner">
 
     <div class="home-header">
-        <h1 class="home-title">XTzero Docs</h1>
+        <h1 class="home-title">XT - Treinamento</h1>
         <p class="home-sub">Documentação do framework Jasap aplicado ao módulo de estudo</p>
     </div>
 
     <div class="home-grid">
 
-        <div class="home-card" onclick="show('ModuloManager', null)">
+        <div class="home-card" onclick="location.href='novo-modulo.html'">
             <div class="home-card-icon" style="background:#7A3E9D;">
                 <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18L20 8.5v7L12 19.82 4 15.5v-7L12 4.18z"/></svg>
             </div>
             <div class="home-card-body">
-                <h3>ModuloManager</h3>
-                <p>Registra todas as actions do módulo e define a chave de permissão de acesso.</p>
+                <h3>NOVO MODULO</h3>
+                <p>Estrutura base de um módulo no framework Jasap: Manager, Home, MdFactory e entidades.</p>
             </div>
             <span class="home-card-btn" style="border-color:#7A3E9D;color:#7A3E9D;">Ver docs</span>
         </div>
 
-        <div class="home-card" onclick="show('home', null)">
-            <div class="home-card-icon" style="background:#2563eb;">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-            </div>
-            <div class="home-card-body">
-                <h3>ModuloHome</h3>
-                <p>Tela inicial do módulo: sidebar com menu lateral, breadcrumb e navegação MID.</p>
-            </div>
-            <span class="home-card-btn" style="border-color:#2563eb;color:#2563eb;">Ver docs</span>
-        </div>
-
-        <div class="home-card" onclick="show('mdfactory', null)">
-            <div class="home-card-icon" style="background:#267F99;">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14l4-4h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
-            </div>
-            <div class="home-card-body">
-                <h3>ModuloMdFactory</h3>
-                <p>Fábrica de models: centraliza o acesso a todos os DAOs do módulo.</p>
-            </div>
-            <span class="home-card-btn" style="border-color:#267F99;color:#267F99;">Ver docs</span>
-        </div>
-
-        <div class="home-card" onclick="show('rootmanager', null)">
-            <div class="home-card-icon" style="background:#d97706;">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
-            </div>
-            <div class="home-card-body">
-                <h3>RootManager</h3>
-                <p>Ponto de inicialização da aplicação. Registra o ModuloManager no framework.</p>
-            </div>
-            <span class="home-card-btn" style="border-color:#d97706;color:#d97706;">Ver docs</span>
-        </div>
-
-        <div class="home-card" onclick="show('rootfactory', null)">
-            <div class="home-card-icon" style="background:#059669;">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
-            </div>
-            <div class="home-card-body">
-                <h3>AppsRootModelFactory</h3>
-                <p>Fábrica raiz: acesso a todos os MdFactories da aplicação.</p>
-            </div>
-            <span class="home-card-btn" style="border-color:#059669;color:#059669;">Ver docs</span>
-        </div>
-
-        <div class="home-card" onclick="show('homedesk', null)">
-            <div class="home-card-icon" style="background:#dc2626;">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-            </div>
-            <div class="home-card-body">
-                <h3>HomeDesk</h3>
-                <p>Tela inicial da aplicação após o login. Exibe os módulos disponíveis ao usuário.</p>
-            </div>
-            <span class="home-card-btn" style="border-color:#dc2626;color:#dc2626;">Ver docs</span>
-        </div>
-
     </div>
 
 </div>
 
-    <div id="footer">
-        <div id="footer-inner">
-            <div>
-                <h3>Exibindo no Menu</h3>
-                <a onclick="show('ModuloManager', null)">ModuloManager</a>
-                <a onclick="show('home', null)">ModuloHome</a>
-                <a onclick="show('mdfactory', null)">ModuloMdFactory</a>
-                <a onclick="show('rootmanager', null)">RootManager</a>
-                <a onclick="show('rootfactory', null)">AppsRootModelFactory</a>
-                <a onclick="show('homedesk', null)">HomeDesk</a>
-            </div>
-            <div>
-                <h3>Conceitos</h3>
-                <a href="#">O que é uma Action</a>
-                <a href="#">O que é um Manager</a>
-                <a href="#">O que é um DAO</a>
-                <a href="#">O que é um Bean</a>
-                <a href="#">Fluxo de uma requisição</a>
-            </div>
-            <div>
-                <h3>Padrões</h3>
-                <a href="#">Nomenclatura de arquivos</a>
-                <a href="#">Constante ROOT</a>
-                <a href="#">Campo qs_xxx</a>
-                <a href="#">LinkBox e FK</a>
-                <a href="#">Detail e N-N</a>
-            </div>
-            <div>
-                <h3>Referências</h3>
-                <a href="#">CLAUDE.md</a>
-                <a href="#">Jasap — código-fonte</a>
-                <a href="#">app — modelo</a>
-                <a href="#">Banco PRD_ZERO</a>
-            </div>
+<div id="footer">
+    <div id="footer-inner">
+        <div>
+            <h3>NOVO MODULO</h3>
+            <a href="pages/ModuloManager.html">ModuloManager</a>
+            <a href="pages/ModuloHome.html">ModuloHome</a>
+            <a href="pages/ModuloMdFactory.html">ModuloMdFactory</a>
+            <a href="pages/RootManager.html">RootManager</a>
+            <a href="pages/AppsRootModelFactory.html">AppsRootModelFactory</a>
+        </div>
+        <div>
+            <h3>Conceitos</h3>
+            <a href="#">O que é uma Action</a>
+            <a href="#">O que é um Manager</a>
+            <a href="#">O que é um DAO</a>
+            <a href="#">O que é um Bean</a>
+            <a href="#">Fluxo de uma requisição</a>
+        </div>
+        <div>
+            <h3>Padrões</h3>
+            <a href="#">Nomenclatura de arquivos</a>
+            <a href="#">Constante ROOT</a>
+            <a href="#">Campo qs_xxx</a>
+            <a href="#">LinkBox e FK</a>
+            <a href="#">Detail e N-N</a>
+        </div>
+        <div>
+            <h3>Referências</h3>
+            <a href="#">CLAUDE.md</a>
+            <a href="#">Jasap — código-fonte</a>
+            <a href="#">app — modelo</a>
+            <a href="#">Banco PRD_ZERO</a>
         </div>
     </div>
+</div>
+
 </div>
 
 </div> <!-- layout -->
 
-<script src="js/docs.js"></script>
+<script>
+function toggleDrawer() {
+    const drawer = document.getElementById('drawer');
+    drawer.classList.toggle('open');
+    document.getElementById('hamburger').classList.toggle('open');
+    localStorage.setItem('drawerOpen', drawer.classList.contains('open'));
+}
+
+function toggleGroup(header) {
+    header.closest('.menu-group').classList.toggle('collapsed');
+}
+
+function toggleTheme() {
+    const dark = document.body.classList.toggle('dark');
+    document.getElementById('theme-toggle').innerHTML = dark ? '&#9790;' : '&#9788;';
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('drawerOpen') === 'true') {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('hamburger').classList.add('open');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('theme-toggle').innerHTML = '&#9790;';
+    }
+});
+</script>
 
 </body>
 </html>
