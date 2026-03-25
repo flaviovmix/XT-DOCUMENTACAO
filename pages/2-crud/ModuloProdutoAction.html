@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModuloProdutoAction — XT - Treinamento</title>
+    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
+    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="../../css/docs.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+    <button id="hamburger" onclick="toggleDrawer()">
+        <span></span><span></span><span></span>
+    </button>
+    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
+    </div>
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+<!-- DRAWER -->
+<div id="drawer">
+<div id="drawer-inner">
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            NOVO MODULO
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="../1-novo-modulo/ModuloManager.html">1º — ModuloManager</a>
+            <a class="menu-item" href="../1-novo-modulo/ModuloHome.html">2º — ModuloHome</a>
+            <a class="menu-item" href="../1-novo-modulo/ModuloMdFactory.html">3º — ModuloMdFactory</a>
+            <a class="menu-item" href="../1-novo-modulo/rootmanager.html">4º — RootManager</a>
+            <a class="menu-item" href="../1-novo-modulo/AppsRootModelFactory.html">5º — AppsRootModelFactory</a>
+        </div>
+    </div>
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            CRUD
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="crud.html">Ver episódio</a>
+            <a class="menu-item" href="ModuloProdutoBean.html">1º — ModuloProdutoBean</a>
+            <a class="menu-item" href="ModuloProdutoWBean.html">2º — ModuloProdutoWBean</a>
+            <a class="menu-item" href="ModuloProdutoDAO.html">3º — ModuloProdutoDAO</a>
+            <a class="menu-item" href="ModuloProdutoModel.html">4º — ModuloProdutoModel</a>
+            <a class="menu-item active" href="ModuloProdutoAction.html">5º — ModuloProdutoAction</a>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+<div id="content-inner">
+
+<h1>ModuloProdutoAction <span class="badge badge-new">novo arquivo</span></h1>
+
+<p>Classe base abstrata de todas as actions de Produto. Centraliza três coisas que <code>ModuloProdutoList</code>, <code>ModuloProdutoForm</code> e suas inner classes precisam compartilhar: o prefixo <code>ROOT</code>, os objetos Bean e WBean da requisição, e o acesso ao ID do produto em edição.</p>
+
+<pre><code class="language-java">package br.xt.app.modulo.produto;
+
+import br.xt.AppsRootAction;
+import br.xt.app.modulo.ModuloManager;
+
+public abstract class ModuloProdutoAction extends AppsRootAction {
+
+    public static final String ROOT = ModuloManager.F_ACESSO_MODULO.concat("__PRO/");
+
+    private ModuloProdutoWBean wbean = null;
+    public ModuloProdutoWBean proWBean() throws Exception {
+        if (wbean == null)
+            wbean = (ModuloProdutoWBean) getManager().getInstance(ModuloProdutoWBean.class);
+        return wbean;
+    }
+
+    private ModuloProdutoBean bean = null;
+    public ModuloProdutoBean proBean() throws Exception {
+        if (bean == null)
+            bean = (ModuloProdutoBean) getManager().getInstance(ModuloProdutoBean.class);
+        return bean;
+    }
+
+    public Integer id_pro() throws Exception {
+        return getSession().getInteger(ROOT.concat(ModuloProdutoBean.ID_PRO));
+    }
+
+}
+</code></pre>
+
+<h2 data-nav="abstract"><code class="explicacao">public abstract class ModuloProdutoAction extends AppsRootAction</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>abstract</code></td><td>Esta classe nunca é usada diretamente — não tem <code>execute()</code>. Só existe para ser estendida por <code>ModuloProdutoList</code> e <code>ModuloProdutoForm</code>. O <code>abstract</code> impede que o framework tente instanciá-la ou registrá-la por engano</td></tr>
+    <tr><td><code>extends AppsRootAction</code></td><td>Herda toda a infraestrutura do framework: <code>getInput()</code>, <code>getSession()</code>, <code>getManager()</code>, <code>ui()</code>, <code>link()</code>, <code>eval()</code>, <code>update()</code>, entre outros</td></tr>
+</table>
+</div>
+
+<h2 data-nav="ROOT"><code class="explicacao">public static final String ROOT = ModuloManager.F_ACESSO_MODULO.concat("__PRO/")</code></h2>
+<p>Prefixo único da entidade Produto. Usado para montar chaves de sessão e constantes de formulário, garantindo que não haja conflito com outras entidades do módulo.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>public static final</code></td><td>Acessível de qualquer lugar, pertence à classe e não pode ser alterado — é uma constante verdadeira</td></tr>
+    <tr><td><code>F_ACESSO_MODULO.concat("__PRO/")</code></td><td>Resulta em <code>"XT...MODULO__PRO/"</code>. O sufixo <code>__PRO/</code> identifica a entidade Produto. Se o módulo tiver outras entidades (ex: Pessoa), cada uma terá seu próprio sufixo (<code>__PES/</code>), evitando que chaves de sessão de entidades diferentes se sobreponham</td></tr>
+</table>
+</div>
+
+<h2 data-nav="proBean vs proWBean"><code class="explicacao">proBean() e proWBean() — qual a diferença?</code></h2>
+<p>Os dois parecem iguais porque <code>ModuloProdutoWBean</code> estende <code>ModuloProdutoBean</code> — mas servem para propósitos completamente diferentes:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Método</th><th>Tipo retornado</th><th>Usado por</th><th>Para quê</th></tr>
+    <tr><td><code>proBean()</code></td><td><code>ModuloProdutoBean</code></td><td>Formulário</td><td>Carrega os dados do registro sendo criado ou editado. O Form preenche os campos a partir dele e grava de volta nele antes de salvar</td></tr>
+    <tr><td><code>proWBean()</code></td><td><code>ModuloProdutoWBean</code></td><td>Listagem</td><td>Carrega os parâmetros de filtro e o estado de paginação. A List guarda na sessão entre requisições para lembrar a página atual</td></tr>
+</table>
+</div>
+
+<p>Os dois ficam aqui porque tanto <code>ModuloProdutoList</code> quanto <code>ModuloProdutoForm</code> estendem esta classe — ambos precisam de acesso fácil aos dois objetos sem redeclarar.</p>
+
+<h2 data-nav="getInstance"><code class="explicacao">private ... = null / if (wbean == null) / getManager().getInstance()</code></h2>
+<p>O campo privado começa como <code>null</code> e só é instanciado na primeira chamada — padrão chamado de inicialização lazy. A partir daí o mesmo objeto é reutilizado em todas as chamadas seguintes dentro da mesma requisição.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Linha</th><th>O que faz</th></tr>
+    <tr><td><code>private ModuloProdutoBean bean = null</code></td><td>Campo privado inicializado como <code>null</code> — ainda não foi criado</td></tr>
+    <tr><td><code>if (bean == null)</code></td><td>Só instancia na primeira chamada. Se já foi criado, pula direto para o <code>return</code></td></tr>
+    <tr><td><code>getManager().getInstance(...)</code></td><td>Retorna a instância registrada no escopo da requisição. Garante que todas as actions que chamam <code>proBean()</code> na mesma requisição recebem o <strong>mesmo objeto</strong> — se uma action popula o bean com dados do input, a próxima já encontra esses dados sem precisar ler de novo</td></tr>
+</table>
+</div>
+
+<h2 data-nav="id_pro"><code class="explicacao">id_pro()</code></h2>
+<p>Lê da sessão o ID do produto que está sendo editado no momento.</p>
+<p>Quando o usuário clica numa linha da lista, o <code>ShowUpdate</code> grava o ID na sessão:</p>
+<pre><code class="language-java">getSession().addInt(ROOT.concat(ModuloProdutoBean.ID_PRO), proBean().getId_pro());
+</code></pre>
+<p>A partir daí, qualquer action que precisar saber qual produto está aberto chama <code>id_pro()</code> — o ID já está garantido na sessão, sem precisar ler do input novamente.</p>
+<p>A chave <code>ROOT.concat(ModuloProdutoBean.ID_PRO)</code> resulta em <code>"XT...MODULO__PRO/id_pro"</code>. O prefixo <code>ROOT</code> garante que essa chave não conflita com o ID de outra entidade que também tenha um campo <code>id_xxx</code> na sessão.</p>
+
+</div>
+
+<div id="footer">
+    <div id="footer-inner">
+        <div>
+            <h3>NOVO MODULO</h3>
+            <a href="../1-novo-modulo/ModuloManager.html">ModuloManager</a>
+            <a href="../1-novo-modulo/ModuloHome.html">ModuloHome</a>
+            <a href="../1-novo-modulo/ModuloMdFactory.html">ModuloMdFactory</a>
+            <a href="../1-novo-modulo/rootmanager.html">RootManager</a>
+            <a href="../1-novo-modulo/AppsRootModelFactory.html">AppsRootModelFactory</a>
+        </div>
+        <div>
+            <h3>CRUD</h3>
+            <a href="crud.html">Ver episódio</a>
+            <a href="ModuloProdutoBean.html">ModuloProdutoBean</a>
+            <a href="ModuloProdutoWBean.html">ModuloProdutoWBean</a>
+            <a href="ModuloProdutoDAO.html">ModuloProdutoDAO</a>
+            <a href="ModuloProdutoModel.html">ModuloProdutoModel</a>
+            <a href="ModuloProdutoAction.html">ModuloProdutoAction</a>
+        </div>
+        <div>
+            <h3>Conceitos</h3>
+            <a href="#">O que é uma Action</a>
+            <a href="#">O que é um Manager</a>
+            <a href="#">O que é um DAO</a>
+            <a href="#">O que é um Bean</a>
+            <a href="#">Fluxo de uma requisição</a>
+        </div>
+        <div>
+            <h3>Referências</h3>
+            <a href="#">CLAUDE.md</a>
+            <a href="#">Jasap — código-fonte</a>
+            <a href="#">app — modelo</a>
+            <a href="#">Banco PRD_TREINAMENTO</a>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</div> <!-- layout -->
+
+<script src="../../js/docs.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const inner = document.getElementById('content-inner');
+    highlightAll(inner);
+    initCopyButtons(inner);
+    initAudioPlayers(inner);
+
+    if (localStorage.getItem('drawerOpen') === 'true') {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('hamburger').classList.add('open');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('theme-toggle').innerHTML = '&#9790;';
+        document.getElementById('hljs-light').disabled = true;
+        document.getElementById('hljs-dark').disabled  = false;
+    }
+});
+</script>
+
+</body>
+</html>

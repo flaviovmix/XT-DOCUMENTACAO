@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModuloProdutoForm — XT - Treinamento</title>
+    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
+    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="../../css/docs.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+    <button id="hamburger" onclick="toggleDrawer()">
+        <span></span><span></span><span></span>
+    </button>
+    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
+    </div>
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+<!-- DRAWER -->
+<div id="drawer">
+<div id="drawer-inner">
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            NOVO MODULO
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="../1-novo-modulo/ModuloManager.html">1º — ModuloManager</a>
+            <a class="menu-item" href="../1-novo-modulo/ModuloHome.html">2º — ModuloHome</a>
+            <a class="menu-item" href="../1-novo-modulo/ModuloMdFactory.html">3º — ModuloMdFactory</a>
+            <a class="menu-item" href="../1-novo-modulo/rootmanager.html">4º — RootManager</a>
+            <a class="menu-item" href="../1-novo-modulo/AppsRootModelFactory.html">5º — AppsRootModelFactory</a>
+        </div>
+    </div>
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            CRUD
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="crud.html">Ver episódio</a>
+            <a class="menu-item" href="ModuloProdutoBean.html">1º — ModuloProdutoBean</a>
+            <a class="menu-item" href="ModuloProdutoWBean.html">2º — ModuloProdutoWBean</a>
+            <a class="menu-item" href="ModuloProdutoDAO.html">3º — ModuloProdutoDAO</a>
+            <a class="menu-item" href="ModuloProdutoModel.html">4º — ModuloProdutoModel</a>
+            <a class="menu-item" href="ModuloProdutoAction.html">5º — ModuloProdutoAction</a>
+            <a class="menu-item" href="ModuloProdutoList.html">6º — ModuloProdutoList</a>
+            <a class="menu-item active" href="ModuloProdutoForm.html">7º — ModuloProdutoForm</a>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+<div id="content-inner">
+
+<h1>ModuloProdutoForm <span class="badge badge-new">novo arquivo</span></h1>
+
+<p>Formulário de cadastro e edição de Produto. A mesma tela serve para inserção e edição — o modo atual determina quais botões são visíveis. Concentra seis inner classes: <code>ShowInsert</code>, <code>ShowUpdate</code>, <code>Cancelar</code>, <code>Insert</code>, <code>Update</code> e <code>Delete</code>.</p>
+
+<pre><code class="language-java">package br.xt.app.modulo.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.Bar;
+import br.jasap.gui.Button;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.Table;
+import br.jasap.gui.Toast;
+import br.jasap.gui.form.Check;
+import br.jasap.gui.form.Form;
+import br.jasap.gui.form.Text;
+import br.jasap.gui.form.Textarea;
+import br.jasap.util.DomainValue;
+import br.jasap.util.JasapFunctions;
+import br.jasap.util.JasapList;
+import br.jasap.util.Js;
+import br.jasap.util.exceptions.SQLConstraintException;
+import br.jasap.util.filters.TransactionFilter;
+import br.xt.acore.view.XtPage;
+
+public class ModuloProdutoForm extends ModuloProdutoAction {
+
+    @Override
+    public Effect execute() throws Exception {
+        render();
+        return new Response();
+    }
+
+    public static class ShowInsert extends ModuloProdutoForm {
+        @Override
+        public Effect execute() throws Exception {
+            setInsert(FORM);
+            getSession().remove(ROOT.concat(ModuloProdutoBean.ID_PRO));
+            proBean().setInsert_chk(getInput().getInteger(ModuloProdutoBean.INSERT_CHK));
+            render();
+            return new Response();
+        }
+    }
+
+    public static class ShowUpdate extends ModuloProdutoForm {
+        @Override
+        public Effect execute() throws Exception {
+            setUpdate(FORM);
+            getSession().addInt(ROOT.concat(ModuloProdutoBean.ID_PRO), proBean().getId_pro());
+            getFactory().modulo().proModel().daoSingle(proBean());
+            render();
+            return new Response();
+        }
+    }
+
+    public static class Cancelar extends ModuloProdutoForm {
+        @Override
+        public Effect execute() throws Exception {
+            evalParent(Js.CLOSE_SUB_WINDOWS);
+            return new Response();
+        }
+    }
+
+    public static class Insert extends ModuloProdutoAction {
+        public Insert() { super.getFilters().add(new TransactionFilter()); }
+        @Override
+        public Effect execute() throws Exception {
+            Integer chk = proBean().getInsert_chk();
+            proBean().setInsert_chk(null);
+            getFactory().modulo().proModel().insert(proBean());
+            if (JasapFunctions.equals(chk, 1)) {
+                eval(link(ShowInsert.class)
+                        .putInteger(ModuloProdutoBean.INSERT_CHK, 1)
+                        .noWait().ajax());
+                evalParent(link(ModuloProdutoList.Sort.class).noWait().ajax(false));
+            } else {
+                evalParent(Js.CLOSE_SUB_WINDOWS);
+            }
+            return new Response();
+        }
+    }
+
+    public static class Update extends ModuloProdutoAction {
+        @Override
+        public Effect execute() throws Exception {
+            getFactory().modulo().proModel().update(proBean());
+            evalParent(Js.CLOSE_SUB_WINDOWS);
+            return new Response();
+        }
+    }
+
+    public static class Delete extends ModuloProdutoAction {
+        @Override
+        public Effect execute() throws Exception {
+            try {
+                if (JasapFunctions.equals(getInput().getInteger(CONFIRM), 1)) {
+                    getFactory().modulo().proModel().daoDelete(proBean());
+                    getSession().remove(ROOT.concat(ModuloProdutoBean.ID_PRO));
+                    evalParent(Js.CLOSE_SUB_WINDOWS);
+                } else {
+                    eval(Js.swalConfirm(
+                            "Confirma a exclusão desse registro?",
+                            submit(Delete.class).putInteger(CONFIRM, 1).ajax().toHtml(),
+                            ""));
+                }
+                return new Response();
+            } catch (SQLConstraintException e) {
+                eval(new Toast("Falha ao excluir: esse registro está sendo usado em outra tabela.").fail());
+                return new Response();
+            }
+        }
+    }
+
+    public void render() throws Exception {
+        XtPage page = new XtPage(getManager());
+        if (isAjaxCall()) {
+            update(JasapPage.DIV_WINDOW, page.content(window().toHtml()));
+            eval(Js.CLOSE_SUB_WINDOWS);
+        } else {
+            page.getTable().setBorder(4).rowC("100%")
+                    .setContent(page.content(window().toHtml()))
+                    .setStyle(ui().modalBorder());
+            page.setWinTitle("Produto");
+            getOutput().write(this, page);
+        }
+    }
+
+    public Table window() throws Exception {
+        Table w = new Table(getManager()).setSize("100%", "100%");
+        w.rowC("1%",  JasapPage.DIV_TITLE, ui().title("CADASTRO DE PRODUTO"));
+        w.rowC("1%",  null, ui().line());
+        w.rowC("auto").setId(JasapPage.DIV_MASTER).setContent(form()).table();
+        w.rowC("1%",  null, ui().line());
+        w.rowC("1%",  JasapPage.DIV_BOTTOM, br());
+        return w;
+    }
+
+    protected Bar br() throws Exception {
+        Button salvar = ui().button("&amp;nbsp;&amp;nbsp;Salvar&amp;nbsp;&amp;nbsp;")
+                .setCss("btn btn-success btn-lg").setNoSize()
+                .setOnClick(submit(Insert.class).validate().toHtml())
+                .setVisible(isInsert(FORM));
+
+        Button salvarUpdate = ui().button("&amp;nbsp;&amp;nbsp;Salvar&amp;nbsp;&amp;nbsp;")
+                .setCss("btn btn-success btn-lg").setNoSize()
+                .setOnClick(submit(Update.class).validate().toHtml())
+                .setVisible(isUpdate(FORM));
+
+        Button excluir = ui().button("&amp;nbsp;&amp;nbsp;Excluir&amp;nbsp;&amp;nbsp;")
+                .setCss("btn btn-danger btn-lg").setNoSize()
+                .setOnClick(submit(Delete.class).toHtml())
+                .setVisible(isUpdate(FORM));
+
+        Button cancelar = ui().button("&amp;nbsp;&amp;nbsp;Cancelar&amp;nbsp;&amp;nbsp;")
+                .setCss("btn btn-primary btn-lg").setNoSize()
+                .setOnClick(link(Cancelar.class).ajax());
+
+        Bar bar = ui().bar();
+        bar.addRight(cancelar);
+        bar.addRight("&amp;nbsp;");
+        bar.addRight(salvar);
+        bar.addRight(excluir);
+        bar.addRight("&amp;nbsp;");
+        bar.addRight(salvarUpdate);
+        return bar;
+    }
+
+    public String form() throws Exception {
+        Form frm = ui().form();
+        frm.addHidden(ModuloProdutoBean.ID_PRO, proBean().getId_pro());
+        frm.line().add(nome_pro(),   "150");
+        frm.line().add(vl_pro(),     "150");
+        frm.line().add(qtd_pro(),    "150");
+        frm.line().add(obs_pro(),    "150");
+        frm.line().add(insert_chk(), "150");
+        return frm.getTable().toHtml();
+    }
+
+    protected Text nome_pro = null;
+    public Text nome_pro() throws Exception {
+        if (nome_pro == null) {
+            nome_pro = ui().text(ModuloProdutoBean.NOME_PRO)
+                    .setLabel("Nome").setStyle("width:350;height:25")
+                    .setMaxlength(100).setRequired(true)
+                    .setValue(proBean().getNome_pro());
+        }
+        return nome_pro;
+    }
+
+    protected Text vl_pro = null;
+    public Text vl_pro() throws Exception {
+        if (vl_pro == null) {
+            vl_pro = ui().text(ModuloProdutoBean.VL_PRO)
+                    .setLabel("Valor").setStyle("width:120;text-align:right;height:25")
+                    .setValue(proBean().getVl_pro());
+        }
+        return vl_pro;
+    }
+
+    protected Text qtd_pro = null;
+    public Text qtd_pro() throws Exception {
+        if (qtd_pro == null) {
+            qtd_pro = ui().text(ModuloProdutoBean.QTD_PRO)
+                    .setLabel("Quantidade").setStyle("width:80;text-align:right;height:25")
+                    .setValue(proBean().getQtd_pro());
+        }
+        return qtd_pro;
+    }
+
+    protected Textarea obs_pro = null;
+    public Textarea obs_pro() throws Exception {
+        if (obs_pro == null) {
+            obs_pro = ui().textArea(ModuloProdutoBean.OBS_PRO, "width:530;height:80")
+                    .setLabel("Observações").setValue(proBean().getObs_pro());
+        }
+        return obs_pro;
+    }
+
+    protected Check insert_chk = null;
+    public Check insert_chk() throws Exception {
+        if (insert_chk == null) {
+            JasapList aux = new JasapList();
+            aux.getList().add(new DomainValue(1, "Continuar inserindo"));
+            aux.setSelected(proBean().getInsert_chk());
+            insert_chk = new Check(getManager(), ModuloProdutoBean.INSERT_CHK)
+                    .setLabel("&amp;nbsp;")
+                    .setLoad(isInsert(FORM))
+                    .setValue(aux);
+        }
+        return insert_chk;
+    }
+
+    public static String FORM    = ROOT.concat("__FORM");
+    public static String CONFIRM = ROOT.concat("__CONFIRM");
+
+}
+</code></pre>
+
+<h2 data-nav="ShowInsert e ShowUpdate"><code class="explicacao">ShowInsert e ShowUpdate — preparar o formulário</code></h2>
+<p>O formulário nunca é aberto por <code>execute()</code> diretamente — sempre por <code>ShowInsert</code> (modo inserção) ou <code>ShowUpdate</code> (modo edição). A diferença entre os dois está no que fazem antes de chamar <code>render()</code>:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Action</th><th>O que faz</th></tr>
+    <tr><td><code>ShowInsert</code></td><td><code>setInsert(FORM)</code> — define modo inserção na sessão. Remove o ID da sessão para garantir bean limpo. Lê <code>insert_chk</code> do input para preservar estado do checkbox ao reabrir</td></tr>
+    <tr><td><code>ShowUpdate</code></td><td><code>setUpdate(FORM)</code> — define modo edição na sessão. Grava o ID do produto na sessão (<code>id_pro()</code> passa a funcionar). Chama <code>daoSingle(proBean())</code> para carregar todos os campos do banco</td></tr>
+</table>
+</div>
+
+<p>A chave <code>FORM</code> guarda o modo atual. <code>isInsert(FORM)</code> e <code>isUpdate(FORM)</code> consultam essa sessão para decidir quais botões mostrar em <code>br()</code>.</p>
+
+<h2 data-nav="Insert Update Delete"><code class="explicacao">Insert, Update e Delete — por que estendem ModuloProdutoAction?</code></h2>
+<p>Por convenção, as actions que escrevem no banco estendem diretamente <code>ModuloProdutoAction</code> (não o Form). Isso evita que <code>render()</code> seja herdado e chamado acidentalmente. A hierarquia é: <code>ModuloProdutoAction</code> → <code>Insert</code>, <code>Update</code>, <code>Delete</code>.</p>
+
+<h2 data-nav="Insert"><code class="explicacao">Insert — TransactionFilter e insert_chk</code></h2>
+<p><code>TransactionFilter</code> é adicionado no construtor. Ele abre uma transação antes de <code>execute()</code> e faz commit ao final; se lançar exceção, faz rollback automaticamente.</p>
+<p>O campo <code>insert_chk</code> precisa de cuidado especial:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Linha</th><th>Por quê</th></tr>
+    <tr><td><code>Integer chk = proBean().getInsert_chk()</code></td><td>Lê o estado do checkbox ANTES de limpar — depois do insert precisamos saber se o usuário quer continuar ou fechar</td></tr>
+    <tr><td><code>proBean().setInsert_chk(null)</code></td><td>OBRIGATÓRIO antes do insert. <code>insert_chk</code> é transiente (sem <code>@DBInfo</code>), mas se não for nulo o framework pode tentar incluí-lo no SQL e gerar erro de coluna inexistente</td></tr>
+    <tr><td><code>if (JasapFunctions.equals(chk, 1))</code></td><td>Se marcado: reabre o formulário vazio no modal E atualiza a lista no pai via <code>evalParent</code>. Se não: fecha o modal</td></tr>
+</table>
+</div>
+
+<h2 data-nav="Delete"><code class="explicacao">Delete — submit vs link na confirmação</code></h2>
+<p>A exclusão usa o padrão de confirmação em duas etapas, mas com uma diferença importante em relação ao <code>DeleteFromList</code> da lista:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Contexto</th><th>Usa</th><th>Por quê</th></tr>
+    <tr><td>Delete no Form</td><td><code>submit(Delete.class)</code></td><td>Envia os valores dos campos do formulário — garante que <code>proBean()</code> é populado corretamente na segunda chamada</td></tr>
+    <tr><td>DeleteFromList na Lista</td><td><code>link(DeleteFromList.class)</code></td><td>Não há formulário aberto — o ID é passado explicitamente via <code>putInteger</code></td></tr>
+</table>
+</div>
+
+<h2 data-nav="render"><code class="explicacao">render() — diferenças em relação à List</code></h2>
+<div class="table-wrap">
+<table>
+    <tr><th>Detalhe</th><th>List</th><th>Form</th></tr>
+    <tr><td>CSS de borda</td><td><code>stretchBorder()</code> — tela cheia</td><td><code>modalBorder()</code> — janela modal pequena</td></tr>
+    <tr><td>Ajax extra</td><td>—</td><td><code>eval(Js.CLOSE_SUB_WINDOWS)</code> — fecha eventuais sub-modais abertos (ex: seletores de FK)</td></tr>
+</table>
+</div>
+
+<h2 data-nav="window"><code class="explicacao">window()</code></h2>
+<div class="table-wrap">
+<table>
+    <tr><th>Linha</th><th>Conteúdo</th></tr>
+    <tr><td><code>DIV_TITLE</code> + <code>ui().title(...)</code></td><td>Cabeçalho escuro com título e botão de fechar (×)</td></tr>
+    <tr><td><code>rowC("auto").setId(DIV_MASTER)</code></td><td>Área dos campos. <code>DIV_MASTER</code> permite atualizar só os campos sem redesenhar a tela</td></tr>
+    <tr><td><code>DIV_BOTTOM</code> + <code>br()</code></td><td>Barra de botões</td></tr>
+</table>
+</div>
+
+<h2 data-nav="br"><code class="explicacao">br() — setVisible e submit vs link</code></h2>
+<p>Os botões usam <code>setVisible</code> para controlar a visibilidade conforme o modo:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Botão</th><th>Visível quando</th><th>Como chama</th></tr>
+    <tr><td>Salvar (Insert)</td><td><code>isInsert(FORM)</code></td><td><code>submit(Insert.class).validate()</code> — valida campos obrigatórios antes de enviar</td></tr>
+    <tr><td>Salvar (Update)</td><td><code>isUpdate(FORM)</code></td><td><code>submit(Update.class).validate()</code></td></tr>
+    <tr><td>Excluir</td><td><code>isUpdate(FORM)</code></td><td><code>submit(Delete.class)</code> — sem validate</td></tr>
+    <tr><td>Cancelar</td><td>Sempre</td><td><code>link(Cancelar.class).ajax()</code> — não envia campos</td></tr>
+</table>
+</div>
+
+<h2 data-nav="form"><code class="explicacao">form() — addHidden e campos</code></h2>
+<p><code>frm.addHidden(ID_PRO, proBean().getId_pro())</code> inclui o ID como campo oculto. É assim que <code>Insert</code> e <code>Update</code> recebem o ID — <code>submit()</code> envia todos os campos do formulário, incluindo os hidden.</p>
+<p>Na inserção o valor é <code>null</code> (bean limpo); na edição é o ID carregado pelo <code>ShowUpdate</code>.</p>
+
+<h2 data-nav="campos"><code class="explicacao">Campos — padrão lazy e setValue</code></h2>
+<p>Todos os campos usam o mesmo padrão lazy do <code>proBean()</code> na Action (<code>private campo = null / if (campo == null)</code>). O <code>setValue(proBean().getCampo())</code> preenche com o valor atual:</p>
+<ul>
+    <li>Modo inserção → bean vazio → campo aparece vazio</li>
+    <li>Modo edição → bean carregado pelo <code>daoSingle</code> → campo aparece com o valor do banco</li>
+</ul>
+
+<h2 data-nav="insert_chk"><code class="explicacao">insert_chk — Continuar inserindo</code></h2>
+<p>O checkbox "Continuar inserindo" aparece apenas no modo inserção (<code>setLoad(isInsert(FORM))</code>). Quando marcado e o usuário clica "Salvar", o <code>Insert</code>:</p>
+<ol>
+    <li>Salva o registro normalmente</li>
+    <li>Reabre o formulário vazio no mesmo modal — sem fechar a janela</li>
+    <li>Atualiza a lista no frame pai — o novo registro já aparece na lista</li>
+</ol>
+<p><code>aux.setSelected(proBean().getInsert_chk())</code> preserva o estado marcado ao reabrir o formulário, para que o usuário não precise marcar o checkbox novamente a cada inserção.</p>
+
+<h2 data-nav="constantes"><code class="explicacao">Constantes</code></h2>
+<div class="table-wrap">
+<table>
+    <tr><th>Constante</th><th>Valor</th><th>Para quê</th></tr>
+    <tr><td><code>FORM</code></td><td><code>ROOT + "__FORM"</code></td><td>Chave de sessão que guarda o modo atual — consultada por <code>isInsert</code> e <code>isUpdate</code></td></tr>
+    <tr><td><code>CONFIRM</code></td><td><code>ROOT + "__CONFIRM"</code></td><td>Flag que indica que o usuário confirmou a exclusão no diálogo</td></tr>
+</table>
+</div>
+
+</div>
+
+<div id="footer">
+    <div id="footer-inner">
+        <div>
+            <h3>NOVO MODULO</h3>
+            <a href="../1-novo-modulo/ModuloManager.html">ModuloManager</a>
+            <a href="../1-novo-modulo/ModuloHome.html">ModuloHome</a>
+            <a href="../1-novo-modulo/ModuloMdFactory.html">ModuloMdFactory</a>
+            <a href="../1-novo-modulo/rootmanager.html">RootManager</a>
+            <a href="../1-novo-modulo/AppsRootModelFactory.html">AppsRootModelFactory</a>
+        </div>
+        <div>
+            <h3>CRUD</h3>
+            <a href="crud.html">Ver episódio</a>
+            <a href="ModuloProdutoBean.html">ModuloProdutoBean</a>
+            <a href="ModuloProdutoWBean.html">ModuloProdutoWBean</a>
+            <a href="ModuloProdutoDAO.html">ModuloProdutoDAO</a>
+            <a href="ModuloProdutoModel.html">ModuloProdutoModel</a>
+            <a href="ModuloProdutoAction.html">ModuloProdutoAction</a>
+            <a href="ModuloProdutoList.html">ModuloProdutoList</a>
+            <a href="ModuloProdutoForm.html">ModuloProdutoForm</a>
+        </div>
+        <div>
+            <h3>Conceitos</h3>
+            <a href="#">O que é uma Action</a>
+            <a href="#">O que é um Manager</a>
+            <a href="#">O que é um DAO</a>
+            <a href="#">O que é um Bean</a>
+            <a href="#">Fluxo de uma requisição</a>
+        </div>
+        <div>
+            <h3>Referências</h3>
+            <a href="#">CLAUDE.md</a>
+            <a href="#">Jasap — código-fonte</a>
+            <a href="#">app — modelo</a>
+            <a href="#">Banco PRD_TREINAMENTO</a>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</div> <!-- layout -->
+
+<script src="../../js/docs.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const inner = document.getElementById('content-inner');
+    highlightAll(inner);
+    initCopyButtons(inner);
+    initAudioPlayers(inner);
+
+    if (localStorage.getItem('drawerOpen') === 'true') {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('hamburger').classList.add('open');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('theme-toggle').innerHTML = '&#9790;';
+        document.getElementById('hljs-light').disabled = true;
+        document.getElementById('hljs-dark').disabled  = false;
+    }
+});
+</script>
+
+</body>
+</html>

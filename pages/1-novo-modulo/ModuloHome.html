@@ -7,7 +7,7 @@
     <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
     <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <link rel="stylesheet" href="../css/docs.css">
+    <link rel="stylesheet" href="../../css/docs.css">
 </head>
 <body>
 
@@ -16,7 +16,7 @@
     <button id="hamburger" onclick="toggleDrawer()">
         <span></span><span></span><span></span>
     </button>
-    <a id="topbar-title" href="../index.html">XT - Treinamento</a>
+    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
 
     <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
         <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
@@ -56,7 +56,7 @@
 
 <h1>ModuloHome <span class="badge badge-new">novo arquivo</span></h1>
 
-<div class="audio-player" data-src="../audio/ModuloHome.m4a">
+<div class="audio-player" data-src="ModuloHome/audio/ModuloHome.m4a">
     <audio preload="metadata"></audio>
     <button class="audio-btn" title="Play / Pause"></button>
     <div class="audio-progress-wrap">
@@ -65,6 +65,8 @@
     </div>
     <span class="audio-time">0:00 / 0:00</span>
 </div>
+
+<div class="carousel" data-path="ModuloHome/img/"></div>
 
 <p>Tela inicial do módulo. Controla a navegação lateral (sidebar), o breadcrumb do header e o roteamento entre as entidades via parâmetro <code>MID</code>. É a primeira action instanciada quando o usuário abre o módulo.</p>
 
@@ -379,13 +381,14 @@ public void render() throws Exception {
 
 </div> <!-- layout -->
 
-<script src="../js/docs.js"></script>
+<script src="../../js/docs.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const inner = document.getElementById('content-inner');
     highlightAll(inner);
     initCopyButtons(inner);
     initAudioPlayers(inner);
+    initCarousel(inner);
 
     if (localStorage.getItem('drawerOpen') === 'true') {
         document.getElementById('drawer').classList.add('open');

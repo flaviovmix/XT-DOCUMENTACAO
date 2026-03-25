@@ -245,6 +245,136 @@ function highlightAll(container) {
     });
 }
 
+async function initCarousel(container) {
+    for (const carousel of container.querySelectorAll('.carousel')) {
+        const path = carousel.dataset.path;
+        if (!path) continue;
+
+        // Auto-detecta imagens tentando carregar em sequência até a primeira falhar
+        const srcs = await new Promise(resolve => {
+            const found = [];
+            function tryNext(i) {
+                const img = new Image();
+                img.onload  = () => { found.push(`${path}${i}.png`); tryNext(i + 1); };
+                img.onerror = () => resolve(found);
+                img.src = `${path}${i}.png`;
+            }
+            tryNext(1);
+        });
+
+        if (srcs.length === 0) continue;
+        const count = srcs.length;
+
+        const track = document.createElement('div');
+        track.className = 'carousel-track';
+
+        const slides = [];
+        for (let i = 0; i < count; i++) {
+            const slide = document.createElement('div');
+            slide.className = 'carousel-slide';
+            const img = document.createElement('img');
+            img.src = srcs[i];
+            img.alt = `Imagem ${i + 1} de ${count}`;
+            slide.appendChild(img);
+            track.appendChild(slide);
+            slides.push(slide);
+        }
+
+        const svgL = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+        const svgR = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+
+        const btnPrev = document.createElement('button');
+        btnPrev.className = 'carousel-btn carousel-btn--prev';
+        btnPrev.title     = 'Anterior';
+        btnPrev.innerHTML = svgL;
+
+        const btnNext = document.createElement('button');
+        btnNext.className = 'carousel-btn carousel-btn--next';
+        btnNext.title     = 'Próxima';
+        btnNext.innerHTML = svgR;
+
+        const dotsWrap = document.createElement('div');
+        dotsWrap.className = 'carousel-dots';
+        const dots = [];
+        for (let i = 0; i < count; i++) {
+            const dot = document.createElement('button');
+            dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+            dot.title     = `Imagem ${i + 1}`;
+            dotsWrap.appendChild(dot);
+            dots.push(dot);
+        }
+
+        carousel.appendChild(track);
+        carousel.appendChild(btnPrev);
+        carousel.appendChild(btnNext);
+        carousel.appendChild(dotsWrap);
+
+        let current = 0;
+
+        function goTo(idx) {
+            current = (idx + count) % count;
+            track.style.transform = `translateX(-${current * 100}%)`;
+            dots.forEach((d, i) => d.classList.toggle('active', i === current));
+        }
+
+        btnPrev.addEventListener('click', () => goTo(current - 1));
+        btnNext.addEventListener('click', () => goTo(current + 1));
+        dots.forEach((dot, i) => dot.addEventListener('click', () => goTo(i)));
+
+        // Lightbox
+        function openLightbox(idx) {
+            let lbIdx = idx;
+            const lb  = document.createElement('div');
+            lb.className = 'carousel-lightbox';
+
+            const img = document.createElement('img');
+            img.src = srcs[lbIdx];
+            img.alt = `Imagem ${lbIdx + 1}`;
+
+            const lbPrev = document.createElement('button');
+            lbPrev.className = 'carousel-lb-btn carousel-lb-btn--prev';
+            lbPrev.title     = 'Anterior';
+            lbPrev.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+
+            const lbNext = document.createElement('button');
+            lbNext.className = 'carousel-lb-btn carousel-lb-btn--next';
+            lbNext.title     = 'Próxima';
+            lbNext.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+
+            function lbGoTo(newIdx) {
+                lbIdx    = (newIdx + count) % count;
+                img.src  = srcs[lbIdx];
+                goTo(lbIdx);
+            }
+
+            lbPrev.addEventListener('click', e => { e.stopPropagation(); lbGoTo(lbIdx - 1); });
+            lbNext.addEventListener('click', e => { e.stopPropagation(); lbGoTo(lbIdx + 1); });
+
+            lb.appendChild(lbPrev);
+            lb.appendChild(img);
+            lb.appendChild(lbNext);
+            lb.addEventListener('click', () => lb.remove());
+
+            document.addEventListener('keydown', function lbKey(e) {
+                if (e.key === 'Escape')     { lb.remove(); document.removeEventListener('keydown', lbKey); }
+                if (e.key === 'ArrowLeft')  lbGoTo(lbIdx - 1);
+                if (e.key === 'ArrowRight') lbGoTo(lbIdx + 1);
+            });
+
+            document.body.appendChild(lb);
+        }
+
+        slides.forEach((slide, i) => slide.addEventListener('click', () => openLightbox(i)));
+
+        // Teclado: ← →
+        carousel.setAttribute('tabindex', '0');
+        carousel.addEventListener('keydown', e => {
+            if (e.key === 'ArrowLeft')  goTo(current - 1);
+            if (e.key === 'ArrowRight') goTo(current + 1);
+        });
+    }
+}
+
 function initTopnav(inner) {
     const topnav = document.getElementById('topnav');
     if (!topnav) return;
@@ -425,6 +555,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function toggleGroup(header) {
     header.closest('.menu-group').classList.toggle('collapsed');
+}
+
+function toggleChapter(header) {
+    const clicked = header.closest('.chapter');
+    const isCollapsed = clicked.classList.contains('collapsed');
+    document.querySelectorAll('.chapter').forEach(c => c.classList.add('collapsed'));
+    if (isCollapsed) {
+        clicked.classList.remove('collapsed');
+        setTimeout(() => {
+            const top = clicked.getBoundingClientRect().top + window.scrollY - 52 - 24;
+            window.scrollTo({ top, behavior: 'smooth' });
+        }, 10);
+    }
 }
 
 function toggleTheme() {

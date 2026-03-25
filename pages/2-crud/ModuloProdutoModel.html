@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModuloProdutoModel — XT - Treinamento</title>
+    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
+    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="../../css/docs.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+    <button id="hamburger" onclick="toggleDrawer()">
+        <span></span><span></span><span></span>
+    </button>
+    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
+    </div>
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+<!-- DRAWER -->
+<div id="drawer">
+<div id="drawer-inner">
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            NOVO MODULO
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="../1-novo-modulo/ModuloManager.html">1º — ModuloManager</a>
+            <a class="menu-item" href="../1-novo-modulo/ModuloHome.html">2º — ModuloHome</a>
+            <a class="menu-item" href="../1-novo-modulo/ModuloMdFactory.html">3º — ModuloMdFactory</a>
+            <a class="menu-item" href="../1-novo-modulo/rootmanager.html">4º — RootManager</a>
+            <a class="menu-item" href="../1-novo-modulo/AppsRootModelFactory.html">5º — AppsRootModelFactory</a>
+        </div>
+    </div>
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            CRUD
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="crud.html">Ver episódio</a>
+            <a class="menu-item" href="ModuloProdutoBean.html">1º — ModuloProdutoBean</a>
+            <a class="menu-item" href="ModuloProdutoWBean.html">2º — ModuloProdutoWBean</a>
+            <a class="menu-item" href="ModuloProdutoDAO.html">3º — ModuloProdutoDAO</a>
+            <a class="menu-item active" href="ModuloProdutoModel.html">4º — ModuloProdutoModel</a>
+            <a class="menu-item" href="ModuloProdutoAction.html">5º — ModuloProdutoAction</a>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+<div id="content-inner">
+
+<h1>ModuloProdutoModel <span class="badge badge-new">novo arquivo</span></h1>
+
+<p>O Model é a camada de regras de negócio — fica entre o formulário e o DAO. Neste CRUD simples não há regras, por isso o arquivo é pequeno: <code>insert</code> e <code>update</code> apenas delegam para o DAO.</p>
+
+<pre><code class="language-java">package br.xt.app.modulo.produto;
+
+import br.jasap.core.AppManager;
+
+public class ModuloProdutoModel extends ModuloProdutoDAO {
+
+    public ModuloProdutoModel(AppManager manager) {
+        super(manager);
+    }
+
+    public void insert(ModuloProdutoBean bean) throws Exception {
+        daoInsert(bean);
+    }
+
+    public void update(ModuloProdutoBean bean) throws Exception {
+        daoUpdate(bean);
+    }
+
+}
+</code></pre>
+
+<h2 data-nav="por que tão pequeno"><code class="explicacao">Por que o Model é tão pequeno?</code></h2>
+<p>O papel do Model é concentrar as <strong>regras de negócio</strong> que precisam rodar antes de persistir um dado. Em módulos mais complexos, o <code>insert()</code> e o <code>update()</code> fariam coisas como:</p>
+<ul>
+    <li>Calcular campos derivados</li>
+    <li>Disparar cascata em outras tabelas</li>
+    <li>Validar consistência de dados</li>
+    <li>Chamar outros Models</li>
+</ul>
+<p>Neste CRUD não há nada disso — então o Model só delega para o DAO.</p>
+<p>Você pode estar se perguntando: <em>"por que não chamar o DAO direto do formulário?"</em> — A resposta é separação de responsabilidades. O formulário chama o Model, não o DAO. Se amanhã precisar adicionar uma regra no insert, ela entra no Model sem tocar no formulário nem no DAO.</p>
+
+<h2 data-nav="public class"><code class="explicacao">public class ModuloProdutoModel extends ModuloProdutoDAO</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>ModuloProdutoModel</code></td><td>Convenção do projeto: prefixo do módulo + entidade + <code>Model</code></td></tr>
+    <tr><td><code>extends ModuloProdutoDAO</code></td><td>Herda todos os métodos do DAO (<code>daoList</code>, <code>daoSingle</code>, <code>daoInsert</code>, <code>daoUpdate</code>, <code>daoDelete</code>). O Model acessa o DAO diretamente pela herança, sem precisar criar uma instância</td></tr>
+</table>
+</div>
+
+<h2 data-nav="construtor"><code class="explicacao">ModuloProdutoModel(AppManager manager)</code></h2>
+<p>Passa o <code>AppManager</code> para o construtor do DAO via <code>super(manager)</code>. É quem inicializa a conexão com o banco — sem isso os métodos herdados do DAO não teriam acesso ao banco de dados.</p>
+
+<h2 data-nav="insert e update"><code class="explicacao">insert(bean) / update(bean)</code></h2>
+<p>Por que apenas <code>insert</code> e <code>update</code>, e não <code>delete</code>?</p>
+<p>Delete não tem regra de negócio neste módulo — o formulário chama <code>daoDelete()</code> diretamente. Insert e update existem no Model porque são as operações onde regras de negócio tendem a aparecer conforme o módulo evolui.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Método</th><th>O que faz agora</th><th>O que faria num módulo mais complexo</th></tr>
+    <tr><td><code>insert(bean)</code></td><td>Chama <code>daoInsert(bean)</code></td><td>Calcularia campos derivados, dispararia ações em outras tabelas antes de persistir</td></tr>
+    <tr><td><code>update(bean)</code></td><td>Chama <code>daoUpdate(bean)</code></td><td>Validaria consistência, propagaria mudanças para registros filhos</td></tr>
+</table>
+</div>
+
+</div>
+
+<div id="footer">
+    <div id="footer-inner">
+        <div>
+            <h3>NOVO MODULO</h3>
+            <a href="../1-novo-modulo/ModuloManager.html">ModuloManager</a>
+            <a href="../1-novo-modulo/ModuloHome.html">ModuloHome</a>
+            <a href="../1-novo-modulo/ModuloMdFactory.html">ModuloMdFactory</a>
+            <a href="../1-novo-modulo/rootmanager.html">RootManager</a>
+            <a href="../1-novo-modulo/AppsRootModelFactory.html">AppsRootModelFactory</a>
+        </div>
+        <div>
+            <h3>CRUD</h3>
+            <a href="crud.html">Ver episódio</a>
+            <a href="ModuloProdutoBean.html">ModuloProdutoBean</a>
+            <a href="ModuloProdutoWBean.html">ModuloProdutoWBean</a>
+            <a href="ModuloProdutoDAO.html">ModuloProdutoDAO</a>
+            <a href="ModuloProdutoModel.html">ModuloProdutoModel</a>
+        </div>
+        <div>
+            <h3>Conceitos</h3>
+            <a href="#">O que é uma Action</a>
+            <a href="#">O que é um Manager</a>
+            <a href="#">O que é um DAO</a>
+            <a href="#">O que é um Bean</a>
+            <a href="#">Fluxo de uma requisição</a>
+        </div>
+        <div>
+            <h3>Referências</h3>
+            <a href="#">CLAUDE.md</a>
+            <a href="#">Jasap — código-fonte</a>
+            <a href="#">app — modelo</a>
+            <a href="#">Banco PRD_TREINAMENTO</a>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</div> <!-- layout -->
+
+<script src="../../js/docs.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const inner = document.getElementById('content-inner');
+    highlightAll(inner);
+    initCopyButtons(inner);
+    initAudioPlayers(inner);
+
+    if (localStorage.getItem('drawerOpen') === 'true') {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('hamburger').classList.add('open');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('theme-toggle').innerHTML = '&#9790;';
+        document.getElementById('hljs-light').disabled = true;
+        document.getElementById('hljs-dark').disabled  = false;
+    }
+});
+</script>
+
+</body>
+</html>

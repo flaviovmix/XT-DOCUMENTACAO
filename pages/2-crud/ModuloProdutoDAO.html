@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModuloProdutoDAO — XT - Treinamento</title>
+    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
+    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="../../css/docs.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+    <button id="hamburger" onclick="toggleDrawer()">
+        <span></span><span></span><span></span>
+    </button>
+    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
+    </div>
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+<!-- DRAWER -->
+<div id="drawer">
+<div id="drawer-inner">
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            NOVO MODULO
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="../1-novo-modulo/ModuloManager.html">1º — ModuloManager</a>
+            <a class="menu-item" href="../1-novo-modulo/ModuloHome.html">2º — ModuloHome</a>
+            <a class="menu-item" href="../1-novo-modulo/ModuloMdFactory.html">3º — ModuloMdFactory</a>
+            <a class="menu-item" href="../1-novo-modulo/rootmanager.html">4º — RootManager</a>
+            <a class="menu-item" href="../1-novo-modulo/AppsRootModelFactory.html">5º — AppsRootModelFactory</a>
+        </div>
+    </div>
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            CRUD
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="crud.html">Ver episódio</a>
+            <a class="menu-item" href="ModuloProdutoBean.html">1º — ModuloProdutoBean</a>
+            <a class="menu-item" href="ModuloProdutoWBean.html">2º — ModuloProdutoWBean</a>
+            <a class="menu-item active" href="ModuloProdutoDAO.html">3º — ModuloProdutoDAO</a>
+            <a class="menu-item" href="ModuloProdutoModel.html">4º — ModuloProdutoModel</a>
+            <a class="menu-item" href="ModuloProdutoAction.html">5º — ModuloProdutoAction</a>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+<div id="content-inner">
+
+<h1>ModuloProdutoDAO <span class="badge badge-new">novo arquivo</span></h1>
+
+<p>O DAO é a única camada do módulo que fala diretamente com o banco. Todos os SQLs da entidade Produto passam por ele: listagem, busca por ID, insert, update e delete.</p>
+
+<pre><code class="language-java">package br.xt.app.modulo.produto;
+
+import br.jasap.core.AppManager;
+import br.jasap.dao.Query;
+import br.jasap.util.JasapList;
+import br.xt.AppsRootDAO;
+
+public class ModuloProdutoDAO extends AppsRootDAO {
+
+    public ModuloProdutoDAO() {
+    }
+
+    public ModuloProdutoDAO(AppManager manager) {
+        setManager(manager);
+        setDataBase(manager.getDataBase());
+    }
+
+    public void daoList(JasapList list) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select * from " + ModuloProdutoBean.TABLE);
+        sql.append(" where 1=1 <orderby>");
+
+        Query query = getDataBase().getQuery(sql.toString());
+        select().executeList(query, list);
+
+        while (query.next()) {
+            ModuloProdutoBean bean = new ModuloProdutoBean();
+            query.populateBean(bean);
+            list.getList().add(bean);
+        }
+        query.release();
+    }
+
+    public void daoSingle(ModuloProdutoBean bean) throws Exception {
+        select().execute(bean, ModuloProdutoBean.TABLE);
+    }
+
+    public void daoInsert(ModuloProdutoBean bean) throws Exception {
+        insert().execute(bean, ModuloProdutoBean.TABLE);
+    }
+
+    public void daoUpdate(ModuloProdutoBean bean) throws Exception {
+        update().execute(bean, ModuloProdutoBean.TABLE);
+    }
+
+    public void daoDelete(ModuloProdutoBean bean) throws Exception {
+        delete().execute(bean, ModuloProdutoBean.TABLE);
+    }
+
+}
+</code></pre>
+
+<h2 data-nav="public class"><code class="explicacao">public class ModuloProdutoDAO extends AppsRootDAO</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>public</code></td><td>Visível para o Model, que estende este DAO</td></tr>
+    <tr><td><code>ModuloProdutoDAO</code></td><td>Convenção do projeto: prefixo do módulo + entidade + <code>DAO</code></td></tr>
+    <tr><td><code>extends AppsRootDAO</code></td><td>Herda <code>select()</code>, <code>insert()</code>, <code>update()</code>, <code>delete()</code> e <code>getDataBase()</code>. Sem essa herança seria necessário reimplementar toda a infraestrutura de acesso ao banco</td></tr>
+</table>
+</div>
+
+<h2 data-nav="construtores"><code class="explicacao">ModuloProdutoDAO() / ModuloProdutoDAO(AppManager manager)</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Construtor</th><th>Para quê</th></tr>
+    <tr><td><code>ModuloProdutoDAO()</code></td><td>Construtor vazio — exigido pelo framework para instanciar o DAO via reflection em alguns contextos internos do Jasap</td></tr>
+    <tr><td><code>ModuloProdutoDAO(AppManager manager)</code></td><td>Construtor principal, usado pelo Model. Recebe o <code>AppManager</code>, registra com <code>setManager()</code> e registra a conexão com <code>setDataBase(manager.getDataBase())</code> para que os métodos herdados saibam qual banco usar</td></tr>
+</table>
+</div>
+
+<h2 data-nav="daoList vs demais"><code class="explicacao">Por que daoList é diferente dos outros métodos?</code></h2>
+<p>Os métodos <code>daoSingle</code>, <code>daoInsert</code>, <code>daoUpdate</code> e <code>daoDelete</code> usam os helpers do Jasap — <code>select().execute()</code>, <code>insert().execute()</code>, etc. — que constroem o SQL automaticamente a partir das anotações do Bean (<code>@DBInfo</code>, <code>pk=true</code>, <code>serial=true</code>), executam e mapeiam o resultado, tudo internamente. Eles sempre operam em <strong>um único registro</strong> identificado pelo ID.</p>
+<p>O <code>daoList</code> precisa fazer na mão porque retorna <strong>múltiplos registros</strong>, precisa de SQL customizado com <code>&lt;orderby&gt;</code> para ordenação, e precisa de paginação. Por isso monta o SQL, itera os resultados, cria um bean por linha e popula cada um.</p>
+
+<h2 data-nav="daoList"><code class="explicacao">daoList(JasapList list)</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Linha</th><th>O que faz</th></tr>
+    <tr><td><code>sql.append("select * from " + ModuloProdutoBean.TABLE)</code></td><td>Monta o SELECT. Usa a constante <code>TABLE</code> em vez de string literal — se a tabela mudar no banco, só atualiza o Bean</td></tr>
+    <tr><td><code>sql.append(" where 1=1 &lt;orderby&gt;")</code></td><td><code>1=1</code> garante SQL válido mesmo sem condições. <code>&lt;orderby&gt;</code> é substituído pelo ORDER BY definido na listagem</td></tr>
+    <tr><td><code>getDataBase().getQuery(sql.toString())</code></td><td>Prepara a query com o SQL montado — ainda não executou</td></tr>
+    <tr><td><code>select().executeList(query, list)</code></td><td>Injeta <code>&lt;orderby&gt;</code>, aplica LIMIT/OFFSET para a página atual e executa a consulta no banco</td></tr>
+    <tr><td><code>while (query.next())</code></td><td>Itera os registros retornados. <code>next()</code> retorna <code>false</code> quando não há mais linhas</td></tr>
+    <tr><td><code>query.populateBean(bean)</code></td><td>Usa reflection para mapear cada coluna do <code>ResultSet</code> para o campo correspondente do bean — chama os setters pelo nome da coluna</td></tr>
+    <tr><td><code>list.getList().add(bean)</code></td><td>Adiciona o bean populado na lista de resultados</td></tr>
+    <tr><td><code>query.release()</code></td><td>Libera o cursor e devolve a conexão para o pool. Obrigatório — sem <code>release()</code> a conexão fica ocupada e o pool se esgota</td></tr>
+</table>
+</div>
+
+<h2 data-nav="daoSingle"><code class="explicacao">daoSingle(ModuloProdutoBean bean)</code></h2>
+<p>Carrega um único registro pelo ID. O bean deve ter <code>id_pro</code> preenchido antes de chamar — o Jasap usa o campo marcado com <code>@DBInfo(pk=true)</code> para montar o <code>WHERE</code> automaticamente. Após a execução, os demais campos do bean são preenchidos com os dados do banco.</p>
+
+<h2 data-nav="daoInsert"><code class="explicacao">daoInsert(ModuloProdutoBean bean)</code></h2>
+<p>Insere um novo registro. O Jasap omite automaticamente o campo <code>serial=true</code> no INSERT. Após a execução, o ID gerado pelo banco é gravado de volta em <code>bean.setId_pro()</code>.</p>
+
+<h2 data-nav="daoUpdate"><code class="explicacao">daoUpdate(ModuloProdutoBean bean)</code></h2>
+<p>Atualiza um registro existente. O bean deve ter <code>id_pro</code> preenchido para o <code>WHERE</code> e os demais campos com os novos valores. O Jasap monta: <code>UPDATE laboratorio.pro SET campo=valor, ... WHERE id_pro = ?</code></p>
+
+<h2 data-nav="daoDelete"><code class="explicacao">daoDelete(ModuloProdutoBean bean)</code></h2>
+<p>Exclui um registro pelo ID. Se houver FK em outra tabela apontando para esse registro, o banco lança <code>SQLConstraintException</code> — o Form captura essa exceção para exibir a mensagem de erro ao usuário.</p>
+
+</div>
+
+<div id="footer">
+    <div id="footer-inner">
+        <div>
+            <h3>NOVO MODULO</h3>
+            <a href="../1-novo-modulo/ModuloManager.html">ModuloManager</a>
+            <a href="../1-novo-modulo/ModuloHome.html">ModuloHome</a>
+            <a href="../1-novo-modulo/ModuloMdFactory.html">ModuloMdFactory</a>
+            <a href="../1-novo-modulo/rootmanager.html">RootManager</a>
+            <a href="../1-novo-modulo/AppsRootModelFactory.html">AppsRootModelFactory</a>
+        </div>
+        <div>
+            <h3>CRUD</h3>
+            <a href="crud.html">Ver episódio</a>
+            <a href="ModuloProdutoBean.html">ModuloProdutoBean</a>
+            <a href="ModuloProdutoWBean.html">ModuloProdutoWBean</a>
+            <a href="ModuloProdutoDAO.html">ModuloProdutoDAO</a>
+        </div>
+        <div>
+            <h3>Conceitos</h3>
+            <a href="#">O que é uma Action</a>
+            <a href="#">O que é um Manager</a>
+            <a href="#">O que é um DAO</a>
+            <a href="#">O que é um Bean</a>
+            <a href="#">Fluxo de uma requisição</a>
+        </div>
+        <div>
+            <h3>Referências</h3>
+            <a href="#">CLAUDE.md</a>
+            <a href="#">Jasap — código-fonte</a>
+            <a href="#">app — modelo</a>
+            <a href="#">Banco PRD_TREINAMENTO</a>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</div> <!-- layout -->
+
+<script src="../../js/docs.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const inner = document.getElementById('content-inner');
+    highlightAll(inner);
+    initCopyButtons(inner);
+    initAudioPlayers(inner);
+
+    if (localStorage.getItem('drawerOpen') === 'true') {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('hamburger').classList.add('open');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('theme-toggle').innerHTML = '&#9790;';
+        document.getElementById('hljs-light').disabled = true;
+        document.getElementById('hljs-dark').disabled  = false;
+    }
+});
+</script>
+
+</body>
+</html>

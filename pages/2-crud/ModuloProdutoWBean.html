@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModuloProdutoWBean — XT - Treinamento</title>
+    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
+    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="../../css/docs.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+    <button id="hamburger" onclick="toggleDrawer()">
+        <span></span><span></span><span></span>
+    </button>
+    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
+    </div>
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+<!-- DRAWER -->
+<div id="drawer">
+<div id="drawer-inner">
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            NOVO MODULO
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="../1-novo-modulo/ModuloManager.html">1º — ModuloManager</a>
+            <a class="menu-item" href="../1-novo-modulo/ModuloHome.html">2º — ModuloHome</a>
+            <a class="menu-item" href="../1-novo-modulo/ModuloMdFactory.html">3º — ModuloMdFactory</a>
+            <a class="menu-item" href="../1-novo-modulo/rootmanager.html">4º — RootManager</a>
+            <a class="menu-item" href="../1-novo-modulo/AppsRootModelFactory.html">5º — AppsRootModelFactory</a>
+        </div>
+    </div>
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            CRUD
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="crud.html">Ver episódio</a>
+            <a class="menu-item" href="ModuloProdutoBean.html">1º — ModuloProdutoBean</a>
+            <a class="menu-item active" href="ModuloProdutoWBean.html">2º — ModuloProdutoWBean</a>
+            <a class="menu-item" href="ModuloProdutoDAO.html">3º — ModuloProdutoDAO</a>
+            <a class="menu-item" href="ModuloProdutoModel.html">4º — ModuloProdutoModel</a>
+            <a class="menu-item" href="ModuloProdutoAction.html">5º — ModuloProdutoAction</a>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+<div id="content-inner">
+
+<h1>ModuloProdutoWBean <span class="badge badge-new">novo arquivo</span></h1>
+
+<p>O WBean (Where Bean) é o objeto de filtro da listagem. Ele estende o Bean e implementa a interface <code>Criteria</code> do Jasap — é quem carrega os parâmetros de busca que o DAO usa para montar o <code>WHERE</code> do SQL.</p>
+
+<pre><code class="language-java">package br.xt.app.modulo.produto;
+
+import br.jasap.dao.Criteria;
+
+public class ModuloProdutoWBean extends ModuloProdutoBean implements Criteria {
+
+    private String where;
+    private String in_sql    = null;
+    private String notin_sql = null;
+
+    public String getIn_sql()                    { return in_sql; }
+    public void   setIn_sql(String in_sql)       { this.in_sql = in_sql; }
+
+    public String getNotin_sql()                 { return notin_sql; }
+    public void   setNotin_sql(String notin_sql) { this.notin_sql = notin_sql; }
+
+    public String getWhere()             { return where; }
+    public void   setWhere(String where) { this.where = where; }
+
+}
+</code></pre>
+
+<h2 data-nav="public class"><code class="explicacao">public class ModuloProdutoWBean extends ModuloProdutoBean implements Criteria</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>public</code></td><td>Visível para o DAO e para a listagem, que instanciam o WBean diretamente</td></tr>
+    <tr><td><code>ModuloProdutoWBean</code></td><td>Convenção do projeto: mesmo prefixo do Bean + <code>WBean</code></td></tr>
+    <tr><td><code>extends ModuloProdutoBean</code></td><td>Herda as constantes de campo do Bean (<code>NOME_PRO</code>, <code>ID_PRO</code>, etc.), que o <code>daoWhere()</code> usa ao montar o SQL. É também a convenção do projeto — todo WBean estende seu Bean correspondente</td></tr>
+    <tr><td><code>implements Criteria</code></td><td>Contrato exigido pelo Jasap para que o framework reconheça o objeto como portador de filtros SQL. Sem isso, o <code>daoWhere()</code> não reconhece o objeto corretamente</td></tr>
+</table>
+</div>
+
+<h2 data-nav="campos"><code class="explicacao">private String where / in_sql / notin_sql</code></h2>
+<p>Os três campos são exigidos pela interface <code>Criteria</code>. O framework os lê ao montar o SQL final da consulta.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Campo</th><th>O que armazena</th></tr>
+    <tr><td><code>where</code></td><td>A cláusula <code>WHERE</code> montada pelo <code>daoWhere()</code>. O DAO chama <code>filtro.setWhere(where)</code> ao final do método e o framework injeta esse valor no SQL antes de executar a consulta</td></tr>
+    <tr><td><code>in_sql</code></td><td>Cláusula <code>IN</code> para filtros de múltipla seleção. Inicializado como <code>null</code> — não utilizado neste CRUD simples, mas exigido pela interface</td></tr>
+    <tr><td><code>notin_sql</code></td><td>Cláusula <code>NOT IN</code> para exclusões de registros específicos. Inicializado como <code>null</code> — não utilizado neste CRUD simples, mas exigido pela interface</td></tr>
+</table>
+</div>
+
+<h2 data-nav="getters e setters"><code class="explicacao">getWhere() / getIn_sql() / getNotin_sql()</code></h2>
+<p>Os três pares de getter/setter são exigidos pela interface <code>Criteria</code> — sem eles a classe não compila.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Método</th><th>Quem chama</th><th>Para quê</th></tr>
+    <tr><td><code>getWhere()</code></td><td>Framework</td><td>Lê a cláusula WHERE e injeta no <code>&lt;where&gt;</code> do SQL antes de executar</td></tr>
+    <tr><td><code>setWhere()</code></td><td><code>daoWhere()</code></td><td>Registra o resultado da montagem do WHERE ao final do método</td></tr>
+    <tr><td><code>getIn_sql()</code></td><td>Framework</td><td>Lê a cláusula IN ao montar o SQL final</td></tr>
+    <tr><td><code>getNotin_sql()</code></td><td>Framework</td><td>Lê a cláusula NOT IN ao montar o SQL final</td></tr>
+</table>
+</div>
+
+</div>
+
+<div id="footer">
+    <div id="footer-inner">
+        <div>
+            <h3>NOVO MODULO</h3>
+            <a href="../1-novo-modulo/ModuloManager.html">ModuloManager</a>
+            <a href="../1-novo-modulo/ModuloHome.html">ModuloHome</a>
+            <a href="../1-novo-modulo/ModuloMdFactory.html">ModuloMdFactory</a>
+            <a href="../1-novo-modulo/rootmanager.html">RootManager</a>
+            <a href="../1-novo-modulo/AppsRootModelFactory.html">AppsRootModelFactory</a>
+        </div>
+        <div>
+            <h3>CRUD</h3>
+            <a href="crud.html">Ver episódio</a>
+            <a href="ModuloProdutoBean.html">ModuloProdutoBean</a>
+            <a href="ModuloProdutoWBean.html">ModuloProdutoWBean</a>
+        </div>
+        <div>
+            <h3>Conceitos</h3>
+            <a href="#">O que é uma Action</a>
+            <a href="#">O que é um Manager</a>
+            <a href="#">O que é um DAO</a>
+            <a href="#">O que é um Bean</a>
+            <a href="#">Fluxo de uma requisição</a>
+        </div>
+        <div>
+            <h3>Referências</h3>
+            <a href="#">CLAUDE.md</a>
+            <a href="#">Jasap — código-fonte</a>
+            <a href="#">app — modelo</a>
+            <a href="#">Banco PRD_TREINAMENTO</a>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</div> <!-- layout -->
+
+<script src="../../js/docs.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const inner = document.getElementById('content-inner');
+    highlightAll(inner);
+    initCopyButtons(inner);
+    initAudioPlayers(inner);
+
+    if (localStorage.getItem('drawerOpen') === 'true') {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('hamburger').classList.add('open');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('theme-toggle').innerHTML = '&#9790;';
+        document.getElementById('hljs-light').disabled = true;
+        document.getElementById('hljs-dark').disabled  = false;
+    }
+});
+</script>
+
+</body>
+</html>

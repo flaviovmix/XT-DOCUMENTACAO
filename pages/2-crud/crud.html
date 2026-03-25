@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD — XT - Treinamento</title>
+    <link rel="stylesheet" href="../../css/docs.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+    <button id="hamburger" onclick="toggleDrawer()">
+        <span></span><span></span><span></span>
+    </button>
+    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
+    </div>
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+<!-- DRAWER -->
+<div id="drawer">
+<div id="drawer-inner">
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            NOVO MODULO
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="../1-novo-modulo/ModuloManager.html">1º — ModuloManager</a>
+            <a class="menu-item" href="../1-novo-modulo/ModuloHome.html">2º — ModuloHome</a>
+            <a class="menu-item" href="../1-novo-modulo/ModuloMdFactory.html">3º — ModuloMdFactory</a>
+            <a class="menu-item" href="../1-novo-modulo/rootmanager.html">4º — RootManager</a>
+            <a class="menu-item" href="../1-novo-modulo/AppsRootModelFactory.html">5º — AppsRootModelFactory</a>
+        </div>
+    </div>
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            CRUD
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item active" href="crud.html">Ver episódio</a>
+            <a class="menu-item" href="ModuloProdutoBean.html">1º — ModuloProdutoBean</a>
+            <a class="menu-item" href="ModuloProdutoWBean.html">2º — ModuloProdutoWBean</a>
+            <a class="menu-item" href="ModuloProdutoDAO.html">3º — ModuloProdutoDAO</a>
+            <a class="menu-item" href="ModuloProdutoModel.html">4º — ModuloProdutoModel</a>
+            <a class="menu-item" href="ModuloProdutoAction.html">5º — ModuloProdutoAction</a>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+<div id="content-inner">
+
+    <div class="home-header">
+        <h1 class="home-title">CRUD</h1>
+        <p class="home-sub">Listagem, formulário e exclusão de registros no framework Jasap</p>
+    </div>
+
+    <div class="home-grid">
+
+        <div class="home-card" style="cursor: default; padding: 0; overflow: hidden; position: relative; min-height: 220px;">
+            <iframe src="https://www.youtube.com/embed/gJzp73vo71o"
+                    title="CRUD"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen
+                    style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 177.78%; height: 100%; display: block;"></iframe>
+        </div>
+
+        <div class="home-card" onclick="location.href='ModuloProdutoBean.html'">
+            <div class="home-card-icon" style="background:#d97706;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v1.5H8V13zm0 3h8v1.5H8V16zm0-6h5v1.5H8V10z"/></svg>
+            </div>
+            <div class="home-card-body">
+                <h3>ModuloProdutoBean</h3>
+                <p>Classe de dados que representa um registro da tabela. Define os campos, os tipos e a chave primária.</p>
+            </div>
+            <span class="home-card-btn" style="border-color:#d97706;color:#d97706;">Ver docs</span>
+        </div>
+
+        <div class="home-card" onclick="location.href='ModuloProdutoWBean.html'">
+            <div class="home-card-icon" style="background:#d97706;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 8v-2h-1V9H9v2H3v2h6v2h1v-2h3zm2-8v2h8V5h-8zm-3 6h1v2h2v-2h1v-2h-4v2zm4 4v2h4v-2h-4z"/></svg>
+            </div>
+            <div class="home-card-body">
+                <h3>ModuloProdutoWBean</h3>
+                <p>Bean de filtro da listagem. Implementa Criteria e carrega os parâmetros que o DAO usa para montar o WHERE do SQL.</p>
+            </div>
+            <span class="home-card-btn" style="border-color:#d97706;color:#d97706;">Ver docs</span>
+        </div>
+
+        <div class="home-card" onclick="location.href='ModuloProdutoDAO.html'">
+            <div class="home-card-icon" style="background:#d97706;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M20 13H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zm-2 5h-2v-2h2v2zm0-8H4c-.55 0-1 .45-1 1v.5c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V10c0-.55-.45-1-1-1zm0-6H4c-.55 0-1 .45-1 1v.5c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1zm-2 1h-2V3h2v2z"/></svg>
+            </div>
+            <div class="home-card-body">
+                <h3>ModuloProdutoDAO</h3>
+                <p>Camada de acesso ao banco. Único arquivo que fala diretamente com o PostgreSQL — listagem, busca, insert, update e delete.</p>
+            </div>
+            <span class="home-card-btn" style="border-color:#d97706;color:#d97706;">Ver docs</span>
+        </div>
+
+        <div class="home-card" onclick="location.href='ModuloProdutoModel.html'">
+            <div class="home-card-icon" style="background:#d97706;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+            </div>
+            <div class="home-card-body">
+                <h3>ModuloProdutoModel</h3>
+                <p>Camada de regras de negócio entre o formulário e o DAO. Neste CRUD simples delega diretamente — mas é aqui que as regras entrariam.</p>
+            </div>
+            <span class="home-card-btn" style="border-color:#d97706;color:#d97706;">Ver docs</span>
+        </div>
+
+        <div class="home-card" onclick="location.href='ModuloProdutoAction.html'">
+            <div class="home-card-icon" style="background:#d97706;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M13 2.05v2.02c3.95.49 7 3.85 7 7.93 0 3.21-1.81 6-4.72 7.28L13 17v5h5l-1.22-1.22C19.91 19.07 22 15.76 22 12c0-5.18-3.95-9.45-9-9.95zM11 2.05C5.95 2.55 2 6.82 2 12c0 3.76 2.09 7.07 5.22 8.78L6 22h5v-5l-2.28 2.28C7.81 18 6 15.21 6 12c0-4.08 3.05-7.44 7-7.93V2.05z"/></svg>
+            </div>
+            <div class="home-card-body">
+                <h3>ModuloProdutoAction</h3>
+                <p>Classe base abstrata de List e Form. Centraliza ROOT, proBean(), proWBean() e id_pro() para todas as actions de Produto.</p>
+            </div>
+            <span class="home-card-btn" style="border-color:#d97706;color:#d97706;">Ver docs</span>
+        </div>
+
+        <div class="home-card" onclick="location.href='ModuloProdutoList.html'">
+            <div class="home-card-icon" style="background:#d97706;">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+            </div>
+            <div class="home-card-body">
+                <h3>ModuloProdutoList</h3>
+                <p>Tela de listagem. Exibe os registros em uma ListView paginável com ordenação por coluna, botão para novo registro e exclusão inline com confirmação.</p>
+            </div>
+            <span class="home-card-btn" style="border-color:#d97706;color:#d97706;">Ver docs</span>
+        </div>
+
+    </div>
+
+</div>
+
+<div id="footer">
+    <div id="footer-inner">
+        <div>
+            <h3>NOVO MODULO</h3>
+            <a href="../1-novo-modulo/ModuloManager.html">ModuloManager</a>
+            <a href="../1-novo-modulo/ModuloHome.html">ModuloHome</a>
+            <a href="../1-novo-modulo/ModuloMdFactory.html">ModuloMdFactory</a>
+            <a href="../1-novo-modulo/rootmanager.html">RootManager</a>
+            <a href="../1-novo-modulo/AppsRootModelFactory.html">AppsRootModelFactory</a>
+        </div>
+        <div>
+            <h3>CRUD</h3>
+            <a href="../crud/crud.html">Ver episódio</a>
+        </div>
+        <div>
+            <h3>Conceitos</h3>
+            <a href="#">O que é uma Action</a>
+            <a href="#">O que é um Manager</a>
+            <a href="#">O que é um DAO</a>
+            <a href="#">O que é um Bean</a>
+            <a href="#">Fluxo de uma requisição</a>
+        </div>
+        <div>
+            <h3>Referências</h3>
+            <a href="#">CLAUDE.md</a>
+            <a href="#">Jasap — código-fonte</a>
+            <a href="#">app — modelo</a>
+            <a href="#">Banco PRD_ZERO</a>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</div> <!-- layout -->
+
+<script>
+function toggleDrawer() {
+    const drawer = document.getElementById('drawer');
+    drawer.classList.toggle('open');
+    document.getElementById('hamburger').classList.toggle('open');
+    localStorage.setItem('drawerOpen', drawer.classList.contains('open'));
+}
+
+function toggleGroup(header) {
+    header.closest('.menu-group').classList.toggle('collapsed');
+}
+
+function toggleTheme() {
+    const dark = document.body.classList.toggle('dark');
+    document.getElementById('theme-toggle').innerHTML = dark ? '&#9790;' : '&#9788;';
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('drawerOpen') === 'true') {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('hamburger').classList.add('open');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('theme-toggle').innerHTML = '&#9790;';
+    }
+});
+</script>
+
+</body>
+</html>

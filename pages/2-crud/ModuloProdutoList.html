@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModuloProdutoList — XT - Treinamento</title>
+    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
+    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="../../css/docs.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+    <button id="hamburger" onclick="toggleDrawer()">
+        <span></span><span></span><span></span>
+    </button>
+    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
+    </div>
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+<!-- DRAWER -->
+<div id="drawer">
+<div id="drawer-inner">
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            NOVO MODULO
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="../1-novo-modulo/ModuloManager.html">1º — ModuloManager</a>
+            <a class="menu-item" href="../1-novo-modulo/ModuloHome.html">2º — ModuloHome</a>
+            <a class="menu-item" href="../1-novo-modulo/ModuloMdFactory.html">3º — ModuloMdFactory</a>
+            <a class="menu-item" href="../1-novo-modulo/rootmanager.html">4º — RootManager</a>
+            <a class="menu-item" href="../1-novo-modulo/AppsRootModelFactory.html">5º — AppsRootModelFactory</a>
+        </div>
+    </div>
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            CRUD
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="crud.html">Ver episódio</a>
+            <a class="menu-item" href="ModuloProdutoBean.html">1º — ModuloProdutoBean</a>
+            <a class="menu-item" href="ModuloProdutoWBean.html">2º — ModuloProdutoWBean</a>
+            <a class="menu-item" href="ModuloProdutoDAO.html">3º — ModuloProdutoDAO</a>
+            <a class="menu-item" href="ModuloProdutoModel.html">4º — ModuloProdutoModel</a>
+            <a class="menu-item" href="ModuloProdutoAction.html">5º — ModuloProdutoAction</a>
+            <a class="menu-item active" href="ModuloProdutoList.html">6º — ModuloProdutoList</a>
+            <a class="menu-item" href="ModuloProdutoForm.html">7º — ModuloProdutoForm</a>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+<div id="content-inner">
+
+<h1>ModuloProdutoList <span class="badge badge-new">novo arquivo</span></h1>
+
+
+<!-- CAPÍTULO 1 -->
+<div class="chapter">
+<div class="chapter-header" onclick="toggleChapter(this)">
+    Capítulo 1 — Visão geral
+    <span class="chapter-arrow">&#9660;</span>
+</div>
+<div class="chapter-body">
+
+<p>Tela de listagem de Produto. Exibe os registros em uma <code>ListView</code> paginável com ordenação por coluna, botão para criar novo registro e exclusão inline com confirmação. Ao clicar numa linha, o formulário de edição é aberto em modal.</p>
+<p>O arquivo concentra tudo relacionado à listagem num único lugar: a estrutura visual (<code>render</code>, <code>window</code>, <code>br</code>), o componente central (<code>lView</code>) e as actions de suporte (<code>Sort</code>, <code>DeleteFromList</code>). Se precisar mexer na lista, você abre um arquivo só.</p>
+
+<pre><code class="language-java">package br.xt.app.modulo.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.Bar;
+import br.jasap.gui.Button;
+import br.jasap.gui.ListColumn;
+import br.jasap.gui.ListLine;
+import br.jasap.gui.ListView;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.Table;
+import br.jasap.gui.Toast;
+import br.jasap.util.JasapFunctions;
+import br.jasap.util.Js;
+import br.jasap.util.ModalConfig;
+import br.jasap.util.exceptions.SQLConstraintException;
+import br.xt.acore.view.XtPage;
+
+public class ModuloProdutoList extends ModuloProdutoAction {
+
+    @Override
+    public Effect execute() throws Exception { ... }
+
+    public static class Sort extends ModuloProdutoList { ... }
+
+    public void render() throws Exception { ... }
+    public Table window() throws Exception { ... }
+    public Bar br() throws Exception { ... }
+    public ListView lView() throws Exception { ... }
+
+    public static class DeleteFromList extends ModuloProdutoList { ... }
+
+    public static final String LIST         = ROOT.concat("__LIST/");
+    public static final String RESET_PAGE   = LIST.concat("__RESET_PAGE");
+    public static final String CONFIRM_LIST = LIST.concat("__CONFIRM_LIST");
+}
+</code></pre>
+
+</div>
+</div>
+
+<!-- CAPÍTULO 2 -->
+<div class="chapter">
+<div class="chapter-header" onclick="toggleChapter(this)">
+    Capítulo 2 — execute() e Sort
+    <span class="chapter-arrow">&#9660;</span>
+</div>
+<div class="chapter-body">
+
+<pre><code class="language-java">@Override
+public Effect execute() throws Exception {
+    render();
+    return new Response();
+}
+
+public static class Sort extends ModuloProdutoList {
+    @Override
+    public Effect execute() throws Exception {
+        update(lView().getDIV_HEADER(), lView().getHeader());
+        update(lView().getDIV_BODY(),   lView().getBody());
+        update(lView().getDIV_NAVIGATE(), lView().getNavForm());
+        return new Response();
+    }
+}
+</code></pre>
+
+<p><code>execute()</code> é o ponto de entrada — apenas chama <code>render()</code> e retorna. Toda a lógica de montagem fica distribuída nos métodos da própria classe.</p>
+<p><code>Sort</code> é chamada quando o usuário clica num cabeçalho de coluna para ordenar ou navega entre páginas. Em vez de chamar <code>render()</code> de novo — o que redesenharia a tela inteira — ela atualiza apenas as três partes que realmente mudaram:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Parte</th><th>O que contém</th></tr>
+    <tr><td><code>getDIV_HEADER()</code></td><td>Cabeçalho das colunas — a seta de ordenação muda de coluna</td></tr>
+    <tr><td><code>getDIV_BODY()</code></td><td>Linhas de dados — a página ou a ordem mudou</td></tr>
+    <tr><td><code>getDIV_NAVIGATE()</code></td><td>Navegação de páginas — o número da página atual mudou</td></tr>
+</table>
+</div>
+
+<p>O resultado é o mesmo que redesenhar tudo, mas sem piscar e mais rápido — só o que mudou é substituído no browser via Ajax.</p>
+
+</div>
+</div>
+
+<!-- CAPÍTULO 3 -->
+<div class="chapter">
+<div class="chapter-header" onclick="toggleChapter(this)">
+    Capítulo 3 — render() e window()
+    <span class="chapter-arrow">&#9660;</span>
+</div>
+<div class="chapter-body">
+
+<pre><code class="language-java">public void render() throws Exception {
+    XtPage page = new XtPage(getManager());
+    if (isAjaxCall()) {
+        update(JasapPage.DIV_WINDOW, page.content(window().toHtml()));
+    } else {
+        page.getTable()
+                .setBorder(4)
+                .rowC("100%")
+                .setContent(page.content(window().toHtml()))
+                .setStyle(ui().stretchBorder());
+        page.setWinTitle("Produtos");
+        getOutput().write(this, page);
+    }
+}
+
+public Table window() throws Exception {
+    Table w = new Table(getManager()).setSize("100%", "100%");
+    w.rowC("99%", JasapPage.DIV_WSPACE, lView());
+    w.rowC("1%",  null, ui().line());
+    w.rowC("1%",  JasapPage.DIV_BOTTOM, br());
+    w.rowC("1%",  null, ui().line());
+    return w;
+}
+</code></pre>
+
+<p><code>render()</code> decide como entregar a tela ao browser. O método <code>isAjaxCall()</code> distingue os dois casos:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Contexto</th><th>O que acontece</th></tr>
+    <tr><td>Chamada Ajax (ex: abertura via modal)</td><td><code>update(DIV_WINDOW, ...)</code> — substitui o conteúdo do <code>DIV_WINDOW</code> sem recarregar a página inteira</td></tr>
+    <tr><td>Acesso direto pelo browser (URL)</td><td><code>getOutput().write(this, page)</code> — escreve o HTML completo com CSS, JS e título da janela</td></tr>
+</table>
+</div>
+
+<p><code>window()</code> monta a estrutura de layout em linhas. <code>Table</code> aqui é um componente de layout do framework — não é uma tabela HTML de dados:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Linha</th><th>Conteúdo</th></tr>
+    <tr><td><code>"99%"</code> + <code>DIV_WSPACE</code></td><td>A <code>ListView</code> ocupa quase toda a altura. <code>DIV_WSPACE</code> envolve a lista para scroll interno</td></tr>
+    <tr><td><code>"1%"</code> + <code>line()</code></td><td>Separador horizontal entre a lista e a barra inferior</td></tr>
+    <tr><td><code>"1%"</code> + <code>DIV_BOTTOM</code></td><td>Barra inferior com navegação e botão "Novo Registro"</td></tr>
+    <tr><td><code>"1%"</code> + <code>line()</code></td><td>Separador na base</td></tr>
+</table>
+</div>
+
+</div>
+</div>
+
+<!-- CAPÍTULO 4 -->
+<div class="chapter">
+<div class="chapter-header" onclick="toggleChapter(this)">
+    Capítulo 4 — br()
+    <span class="chapter-arrow">&#9660;</span>
+</div>
+<div class="chapter-body">
+
+<pre><code class="language-java">public Bar br() throws Exception {
+    Button cmd_novo = ui().button("&amp;nbsp;&amp;nbsp;Novo Registro&amp;nbsp;&amp;nbsp;")
+            .setCss("btn btn-success btn-lg")
+            .setNoSize()
+            .setOnClick(link(ModuloProdutoForm.ShowInsert.class)
+                    .modal(new ModalConfig()
+                            .setWidth("750")
+                            .setHeight("570")
+                            .setOnCloseURL(url(Sort.class))));
+
+    return ui().bar()
+            .addCenter(lView().nav(lView().getNavForm()))
+            .addRight(cmd_novo);
+}
+</code></pre>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Posição</th><th>Componente</th></tr>
+    <tr><td>Centro</td><td><code>lView().nav(lView().getNavForm())</code> — navegação de páginas: anterior, próxima, total de registros</td></tr>
+    <tr><td>Direita</td><td>Botão "Novo Registro" — abre o formulário em modal 750×570</td></tr>
+</table>
+</div>
+
+<p><code>setOnCloseURL(url(Sort.class))</code> — ao fechar o modal (depois de salvar ou cancelar), o framework executa automaticamente a action <code>Sort</code> para recarregar a lista. Sem isso, o novo registro só apareceria após recarregar a página manualmente.</p>
+
+</div>
+</div>
+
+<!-- CAPÍTULO 5 -->
+<div class="chapter">
+<div class="chapter-header" onclick="toggleChapter(this)">
+    Capítulo 5 — lView() — a ListView
+    <span class="chapter-arrow">&#9660;</span>
+</div>
+<div class="chapter-body">
+
+<pre><code class="language-java">private ListView lv = null;
+public ListView lView() throws Exception {
+    if (lv == null) {
+        lv = ui().lView();
+
+        String orderBy = getSession().getString(LIST.concat(lv.getORDER_BY()), getInput());
+        if (orderBy == null) orderBy = ModuloProdutoBean.NOME_PRO;
+
+        lv.setSortAct(url(Sort.class))
+          .setPageAction(url(Sort.class))
+          .setPage(getSession().getInteger(LIST.concat(lv.getPAGE()), getInput()))
+          .setOrderBy(orderBy)
+          .setSort(getSession().getString(LIST.concat(lv.getSORT()), getInput()))
+          .ajax();
+
+        lv.setPageSize(50);
+
+        lv.setFiltro(proWBean());
+        getFactory().modulo().proModel().daoList(lv.getData());
+
+        ListColumn col_nome = lv.newColumn("Nome")      .setOrderBy(ModuloProdutoBean.NOME_PRO).setWidth(220).setPadding(";padding:10 8 10 8;");
+        ListColumn col_vl   = lv.newColumn("Valor")     .setOrderBy(ModuloProdutoBean.VL_PRO)  .setWidth(100).setPadding(";padding:10 8 10 8;").alignCenter();
+        ListColumn col_qtd  = lv.newColumn("Qtd")       .setOrderBy(ModuloProdutoBean.QTD_PRO) .setWidth(80) .setPadding(";padding:10 8 10 8;").alignCenter();
+        ListColumn col_obs  = lv.newColumn("Observação").setOrderBy(ModuloProdutoBean.OBS_PRO)              .setPadding(";padding:10 8 10 8;");
+        ListColumn col_del  = lv.newColumn("")                                                  .setWidth(40) .setPadding(";padding:6 4 6 4;") .alignCenter();
+
+        while (lv.hasNext()) {
+            ModuloProdutoBean bean = (ModuloProdutoBean) lv.next();
+
+            ListLine line = lv.createLine()
+                    .setOnclick(link(ModuloProdutoForm.ShowUpdate.class)
+                            .putInteger(ModuloProdutoBean.ID_PRO, bean.getId_pro())
+                            .modal(new ModalConfig()
+                                    .setWidth("750")
+                                    .setHeight("570")
+                                    .setOnCloseURL(url(Sort.class))));
+
+            col_nome.setContent(bean.getNome_pro());
+            col_vl  .setContent(bean.getVl_pro());
+            col_qtd .setContent(bean.getQtd_pro());
+            col_obs .setContent(bean.getObs_pro());
+            col_del.setHtmlData(
+                "&lt;button type='button' class='close' " +
+                "style='opacity:0.6;font-size:20px;color:#d9534f;float:none;' " +
+                "title='Excluir' " +
+                "onclick=\"event.stopPropagation();" +
+                link(DeleteFromList.class).putInteger(ModuloProdutoBean.ID_PRO, bean.getId_pro()).ajax() +
+                "\"&gt;&amp;times;&lt;/button&gt;"
+            );
+
+            lv.addLine(line);
+        }
+    }
+    return lv;
+}
+</code></pre>
+
+<h3>Inicialização lazy</h3>
+<p>Mesmo padrão do <code>proBean()</code> na Action: o componente só é criado na primeira chamada e reutilizado nas seguintes dentro da mesma requisição.</p>
+
+<h3>ORDER BY padrão</h3>
+<p>O campo de ordenação é lido da sessão. Se ainda não existe (primeira carga da tela), usa <code>NOME_PRO</code> como padrão — garante que a lista nunca aparece sem ordenação definida.</p>
+
+<h3>Configuração de paginação e ordenação</h3>
+<div class="table-wrap">
+<table>
+    <tr><th>Chamada</th><th>O que configura</th></tr>
+    <tr><td><code>setSortAct(url(Sort.class))</code></td><td>URL chamada ao clicar num cabeçalho de coluna</td></tr>
+    <tr><td><code>setPageAction(url(Sort.class))</code></td><td>URL chamada ao navegar entre páginas</td></tr>
+    <tr><td><code>setPage(...)</code></td><td>Página atual — lida da sessão ou do input</td></tr>
+    <tr><td><code>setOrderBy(orderBy)</code></td><td>Coluna de ordenação atual</td></tr>
+    <tr><td><code>setSort(...)</code></td><td>Direção: ASC ou DESC</td></tr>
+    <tr><td><code>ajax()</code></td><td>Paginação e ordenação via Ajax — sem recarregar a página toda</td></tr>
+</table>
+</div>
+
+<h3>setFiltro e daoList</h3>
+<p><code>setFiltro(proWBean())</code> associa o WBean como <code>Criteria</code> — define as condições WHERE aplicadas pelo <code>daoList</code>. Mesmo sem filtros ativos neste CRUD simples, a estrutura já está pronta para quando filtros forem adicionados.</p>
+<p><code>daoList(lv.getData())</code> executa a consulta no banco e preenche a <code>JasapList</code> interna da ListView, já com paginação e ordenação aplicadas.</p>
+
+<h3>Colunas</h3>
+<div class="table-wrap">
+<table>
+    <tr><th>Coluna</th><th>Campo</th><th>Detalhe</th></tr>
+    <tr><td>Nome</td><td><code>NOME_PRO</code></td><td>Largura 220, ordenável</td></tr>
+    <tr><td>Valor</td><td><code>VL_PRO</code></td><td>Largura 100, centralizado, ordenável</td></tr>
+    <tr><td>Qtd</td><td><code>QTD_PRO</code></td><td>Largura 80, centralizado, ordenável</td></tr>
+    <tr><td>Observação</td><td><code>OBS_PRO</code></td><td>Largura livre, ordenável</td></tr>
+    <tr><td><em>(exclusão)</em></td><td>—</td><td>Largura 40, sem cabeçalho — botão × inline</td></tr>
+</table>
+</div>
+
+<h3>Loop e linhas clicáveis</h3>
+<p><code>while (lv.hasNext())</code> itera sobre os registros da página atual. Para cada um, <code>lv.createLine().setOnclick(...)</code> cria uma linha clicável que abre o formulário de edição em modal — passando o ID do produto e configurando <code>setOnCloseURL</code> para recarregar a lista ao fechar.</p>
+
+<h3>setContent vs setHtmlData</h3>
+<div class="table-wrap">
+<table>
+    <tr><th>Método</th><th>Comportamento</th><th>Usar quando</th></tr>
+    <tr><td><code>setContent(valor)</code></td><td>Escapa HTML automaticamente — texto simples</td><td>Dados do bean (nome, valor, obs)</td></tr>
+    <tr><td><code>setHtmlData(html)</code></td><td>HTML bruto — não escapa</td><td>Botões, ícones, qualquer HTML na célula</td></tr>
+</table>
+</div>
+
+<h3>Botão de exclusão inline</h3>
+<p>A coluna <code>col_del</code> recebe um botão Bootstrap <code>class='close'</code> (×) com duas características importantes:</p>
+<ul>
+    <li><code>float:none</code> — neutraliza o <code>float:right</code> padrão da classe <code>close</code>, necessário para que <code>alignCenter()</code> funcione corretamente</li>
+    <li><code>event.stopPropagation()</code> — impede que o clique no botão acione o <code>setOnclick</code> da linha (que abriria o formulário de edição)</li>
+</ul>
+
+</div>
+</div>
+
+<!-- CAPÍTULO 6 -->
+<div class="chapter">
+<div class="chapter-header" onclick="toggleChapter(this)">
+    Capítulo 6 — DeleteFromList
+    <span class="chapter-arrow">&#9660;</span>
+</div>
+<div class="chapter-body">
+
+<pre><code class="language-java">public static class DeleteFromList extends ModuloProdutoList {
+    @Override
+    public Effect execute() throws Exception {
+        try {
+            Integer id = getInput().getInteger(ModuloProdutoBean.ID_PRO);
+            if (JasapFunctions.equals(getInput().getInteger(CONFIRM_LIST), 1)) {
+                proBean().setId_pro(id);
+                getFactory().modulo().proModel().daoDelete(proBean());
+                update(lView().getDIV_BODY(),     lView().getBody());
+                update(lView().getDIV_NAVIGATE(), lView().getNavForm());
+            } else {
+                eval(Js.swalConfirm(
+                        "Confirma a exclusão desse registro?",
+                        link(DeleteFromList.class)
+                                .putInteger(ModuloProdutoBean.ID_PRO, id)
+                                .putInteger(CONFIRM_LIST, 1)
+                                .ajax(),
+                        ""));
+            }
+            return new Response();
+        } catch (SQLConstraintException e) {
+            eval(new Toast("Falha ao excluir: esse registro está sendo usado em outra tabela.").fail());
+            return new Response();
+        }
+    }
+}
+</code></pre>
+
+<p>A exclusão usa um padrão de confirmação em duas etapas para evitar exclusões acidentais:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Chamada</th><th>O que acontece</th></tr>
+    <tr><td>1ª (<code>CONFIRM_LIST</code> ausente)</td><td>Exibe o diálogo <code>swalConfirm</code>. O link do confirm repassa o ID e <code>CONFIRM_LIST=1</code></td></tr>
+    <tr><td>2ª (<code>CONFIRM_LIST == 1</code>)</td><td>Executa <code>daoDelete</code> e atualiza o corpo e a navegação da lista via Ajax</td></tr>
+</table>
+</div>
+
+<p><strong>Por que o ID vem do <code>getInput()</code> e não do <code>id_pro()</code>?</strong> Porque <code>ShowUpdate</code> não foi chamado — o usuário clicou no × direto na lista, sem abrir o formulário. O ID não está na sessão; ele vem do parâmetro passado no link do botão.</p>
+<p><code>SQLConstraintException</code> é capturada para exibir um <code>Toast</code> vermelho quando o registro não pode ser excluído por estar referenciado em outra tabela (FK).</p>
+
+</div>
+</div>
+
+<!-- CAPÍTULO 7 -->
+<div class="chapter">
+<div class="chapter-header" onclick="toggleChapter(this)">
+    Capítulo 7 — Constantes de sessão
+    <span class="chapter-arrow">&#9660;</span>
+</div>
+<div class="chapter-body">
+
+<pre><code class="language-java">public static final String LIST         = ROOT.concat("__LIST/");
+public static final String RESET_PAGE   = LIST.concat("__RESET_PAGE");
+public static final String CONFIRM_LIST = LIST.concat("__CONFIRM_LIST");
+</code></pre>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Constante</th><th>Valor</th><th>Para quê</th></tr>
+    <tr><td><code>LIST</code></td><td><code>ROOT + "__LIST/"</code></td><td>Prefixo de todas as chaves de sessão da listagem — garante que não conflitam com outras entidades</td></tr>
+    <tr><td><code>RESET_PAGE</code></td><td><code>LIST + "__RESET_PAGE"</code></td><td>Força o retorno à página 1 ao executar uma nova busca</td></tr>
+    <tr><td><code>CONFIRM_LIST</code></td><td><code>LIST + "__CONFIRM_LIST"</code></td><td>Flag que indica que o usuário confirmou a exclusão no diálogo</td></tr>
+</table>
+</div>
+
+</div>
+</div>
+
+</div>
+
+<div id="footer">
+    <div id="footer-inner">
+        <div>
+            <h3>NOVO MODULO</h3>
+            <a href="../1-novo-modulo/ModuloManager.html">ModuloManager</a>
+            <a href="../1-novo-modulo/ModuloHome.html">ModuloHome</a>
+            <a href="../1-novo-modulo/ModuloMdFactory.html">ModuloMdFactory</a>
+            <a href="../1-novo-modulo/rootmanager.html">RootManager</a>
+            <a href="../1-novo-modulo/AppsRootModelFactory.html">AppsRootModelFactory</a>
+        </div>
+        <div>
+            <h3>CRUD</h3>
+            <a href="crud.html">Ver episódio</a>
+            <a href="ModuloProdutoBean.html">ModuloProdutoBean</a>
+            <a href="ModuloProdutoWBean.html">ModuloProdutoWBean</a>
+            <a href="ModuloProdutoDAO.html">ModuloProdutoDAO</a>
+            <a href="ModuloProdutoModel.html">ModuloProdutoModel</a>
+            <a href="ModuloProdutoAction.html">ModuloProdutoAction</a>
+            <a href="ModuloProdutoList.html">ModuloProdutoList</a>
+            <a href="ModuloProdutoForm.html">ModuloProdutoForm</a>
+        </div>
+        <div>
+            <h3>Conceitos</h3>
+            <a href="#">O que é uma Action</a>
+            <a href="#">O que é um Manager</a>
+            <a href="#">O que é um DAO</a>
+            <a href="#">O que é um Bean</a>
+            <a href="#">Fluxo de uma requisição</a>
+        </div>
+        <div>
+            <h3>Referências</h3>
+            <a href="#">CLAUDE.md</a>
+            <a href="#">Jasap — código-fonte</a>
+            <a href="#">app — modelo</a>
+            <a href="#">Banco PRD_TREINAMENTO</a>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</div> <!-- layout -->
+
+<script src="../../js/docs.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const inner = document.getElementById('content-inner');
+    highlightAll(inner);
+    initCopyButtons(inner);
+    initAudioPlayers(inner);
+
+    if (localStorage.getItem('drawerOpen') === 'true') {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('hamburger').classList.add('open');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('theme-toggle').innerHTML = '&#9790;';
+        document.getElementById('hljs-light').disabled = true;
+        document.getElementById('hljs-dark').disabled  = false;
+    }
+});
+</script>
+
+</body>
+</html>

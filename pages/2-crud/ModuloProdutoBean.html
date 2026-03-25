@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModuloProdutoBean — XT - Treinamento</title>
+    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
+    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="../../css/docs.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+    <button id="hamburger" onclick="toggleDrawer()">
+        <span></span><span></span><span></span>
+    </button>
+    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
+    </div>
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+<!-- DRAWER -->
+<div id="drawer">
+<div id="drawer-inner">
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            NOVO MODULO
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="../1-novo-modulo/ModuloManager.html">1º — ModuloManager</a>
+            <a class="menu-item" href="../1-novo-modulo/ModuloHome.html">2º — ModuloHome</a>
+            <a class="menu-item" href="../1-novo-modulo/ModuloMdFactory.html">3º — ModuloMdFactory</a>
+            <a class="menu-item" href="../1-novo-modulo/rootmanager.html">4º — RootManager</a>
+            <a class="menu-item" href="../1-novo-modulo/AppsRootModelFactory.html">5º — AppsRootModelFactory</a>
+        </div>
+    </div>
+
+    <div class="menu-group">
+        <div class="menu-group-header" onclick="toggleGroup(this)">
+            CRUD
+            <span class="menu-group-arrow">&#9660;</span>
+        </div>
+        <div class="menu-group-items">
+            <a class="menu-item" href="crud.html">Ver episódio</a>
+            <a class="menu-item active" href="ModuloProdutoBean.html">1º — ModuloProdutoBean</a>
+            <a class="menu-item" href="ModuloProdutoWBean.html">2º — ModuloProdutoWBean</a>
+            <a class="menu-item" href="ModuloProdutoDAO.html">3º — ModuloProdutoDAO</a>
+            <a class="menu-item" href="ModuloProdutoModel.html">4º — ModuloProdutoModel</a>
+            <a class="menu-item" href="ModuloProdutoAction.html">5º — ModuloProdutoAction</a>
+        </div>
+    </div>
+
+</div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+<div id="content-inner">
+
+<h1>ModuloProdutoBean <span class="badge badge-new">novo arquivo</span></h1>
+
+<p>O Bean é a classe de dados que representa um único registro da tabela <code>laboratorio.pro</code>. Ele define os campos, os tipos e a chave primária — é a estrutura que o DAO, o formulário e a listagem usam para ler, gravar e exibir os dados.</p>
+
+<pre><code class="language-java">package br.xt.app.modulo.produto;
+
+import br.jasap.dao.DBInfo;
+import java.io.Serializable;
+
+public class ModuloProdutoBean implements Serializable {
+
+    public static String TABLE = "laboratorio.pro";
+
+    private Integer id_pro;
+    private String  nome_pro;
+    private Double  vl_pro;
+    private Integer qtd_pro;
+    private String  obs_pro;
+
+    @DBInfo(serial=true, pk=true)
+    public Integer getId_pro() { return id_pro; }
+    public void setId_pro(Integer id_pro) { this.id_pro = id_pro; }
+
+    public String getNome_pro() { return nome_pro; }
+    public void setNome_pro(String nome_pro) { this.nome_pro = nome_pro; }
+
+    public Double getVl_pro() { return vl_pro; }
+    public void setVl_pro(Double vl_pro) { this.vl_pro = vl_pro; }
+
+    public Integer getQtd_pro() { return qtd_pro; }
+    public void setQtd_pro(Integer qtd_pro) { this.qtd_pro = qtd_pro; }
+
+    public String getObs_pro() { return obs_pro; }
+    public void setObs_pro(String obs_pro) { this.obs_pro = obs_pro; }
+
+    public static String ID_PRO   = "id_pro";
+    public static String NOME_PRO = "nome_pro";
+    public static String VL_PRO   = "vl_pro";
+    public static String QTD_PRO  = "qtd_pro";
+    public static String OBS_PRO  = "obs_pro";
+
+}
+</code></pre>
+
+<h2 data-nav="public class"><code class="explicacao">public class ModuloProdutoBean implements Serializable</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>public</code></td><td>A classe é visível para todo o projeto — o DAO, o formulário e a listagem precisam instanciá-la diretamente</td></tr>
+    <tr><td><code>class</code></td><td>Declara que isso é uma classe Java — o bloco que agrupa os dados de um produto</td></tr>
+    <tr><td><code>ModuloProdutoBean</code></td><td>Nome da classe. Convenção do projeto: prefixo do módulo + entidade + <code>Bean</code></td></tr>
+    <tr><td><code>implements Serializable</code></td><td>Permite que o objeto seja armazenado na sessão HTTP. O Jasap guarda o bean na sessão entre requisições — sem <code>Serializable</code> isso causaria um erro em runtime ao tentar persistir o estado</td></tr>
+</table>
+</div>
+
+<h2 data-nav="TABLE"><code class="explicacao">public static String TABLE = "laboratorio.pro"</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>public</code></td><td>O DAO e outras classes precisam ler essa constante diretamente via <code>ModuloProdutoBean.TABLE</code></td></tr>
+    <tr><td><code>static</code></td><td>Pertence à classe, não a uma instância — permite usar <code>ModuloProdutoBean.TABLE</code> sem criar um <code>new ModuloProdutoBean()</code></td></tr>
+    <tr><td><code>String</code></td><td>Tipo da constante — é um texto com o nome da tabela</td></tr>
+    <tr><td><code>TABLE</code></td><td>Nome da constante. Convenção do projeto: maiúsculas, sempre chamado <code>TABLE</code> em todos os beans</td></tr>
+    <tr><td><code>"laboratorio.pro"</code></td><td>Schema + tabela no PostgreSQL. O schema <code>laboratorio</code> agrupa as tabelas deste domínio. O DAO passa essa constante para <code>insert()</code>, <code>update()</code> e <code>delete()</code></td></tr>
+</table>
+</div>
+
+<h2 data-nav="campos"><code class="explicacao">private Integer id_pro / private String nome_pro / ...</code></h2>
+<p>Cada campo privado representa uma coluna da tabela. O Jasap usa os nomes dos getters (via reflection) para mapear automaticamente os valores do <code>ResultSet</code> para o bean em <code>query.populateBean(bean)</code> — por isso o nome do campo deve bater exatamente com o nome da coluna no banco.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Campo</th><th>Tipo Java</th><th>Coluna no banco</th><th>O que armazena</th></tr>
+    <tr><td><code>id_pro</code></td><td><code>Integer</code></td><td><code>id_pro</code></td><td>Chave primária gerada pelo banco (serial). <code>Integer</code> e não <code>int</code> porque pode ser <code>null</code> antes do INSERT</td></tr>
+    <tr><td><code>nome_pro</code></td><td><code>String</code></td><td><code>nome_pro</code></td><td>Nome do produto — campo obrigatório validado no formulário</td></tr>
+    <tr><td><code>vl_pro</code></td><td><code>Double</code></td><td><code>vl_pro</code></td><td>Valor numérico com casas decimais — mapeado para <code>numeric</code> no PostgreSQL</td></tr>
+    <tr><td><code>qtd_pro</code></td><td><code>Integer</code></td><td><code>qtd_pro</code></td><td>Quantidade inteira</td></tr>
+    <tr><td><code>obs_pro</code></td><td><code>String</code></td><td><code>obs_pro</code></td><td>Observação livre — campo de texto longo</td></tr>
+</table>
+</div>
+
+<h2 data-nav="@DBInfo"><code class="explicacao">@DBInfo(serial=true, pk=true)</code></h2>
+<p>Anotação do Jasap que configura o comportamento do campo no banco de dados. Fica no getter, não no campo.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Atributo</th><th>O que faz</th></tr>
+    <tr><td><code>serial=true</code></td><td>Indica que o banco gera o valor automaticamente no INSERT via sequence. O DAO omite esse campo no SQL de INSERT — se fosse enviado, causaria conflito com o <code>DEFAULT nextval()</code> do PostgreSQL</td></tr>
+    <tr><td><code>pk=true</code></td><td>Identifica este campo como chave primária. O DAO usa esse campo no <code>WHERE</code> do UPDATE e do DELETE — sem isso o framework não saberia qual registro atualizar</td></tr>
+</table>
+</div>
+
+<h2 data-nav="constantes de campo"><code class="explicacao">public static String ID_PRO = "id_pro"</code></h2>
+<p>Constantes que referenciam o nome das colunas no banco. Usadas no DAO ao construir SQLs e no WBean ao montar filtros — evitam strings literais espalhadas pelo código.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Constante</th><th>Valor</th><th>Onde é usada</th></tr>
+    <tr><td><code>ID_PRO</code></td><td><code>"id_pro"</code></td><td>DAO: <code>SQL.column(ModuloProdutoBean.ID_PRO)</code> no WHERE do daoSingle e daoDelete</td></tr>
+    <tr><td><code>NOME_PRO</code></td><td><code>"nome_pro"</code></td><td>DAO: ORDER BY padrão da listagem</td></tr>
+    <tr><td><code>VL_PRO</code></td><td><code>"vl_pro"</code></td><td>Referência ao campo de valor — disponível para filtros futuros</td></tr>
+    <tr><td><code>QTD_PRO</code></td><td><code>"qtd_pro"</code></td><td>Referência ao campo de quantidade</td></tr>
+    <tr><td><code>OBS_PRO</code></td><td><code>"obs_pro"</code></td><td>Referência ao campo de observação</td></tr>
+</table>
+</div>
+
+</div>
+
+<div id="footer">
+    <div id="footer-inner">
+        <div>
+            <h3>NOVO MODULO</h3>
+            <a href="../1-novo-modulo/ModuloManager.html">ModuloManager</a>
+            <a href="../1-novo-modulo/ModuloHome.html">ModuloHome</a>
+            <a href="../1-novo-modulo/ModuloMdFactory.html">ModuloMdFactory</a>
+            <a href="../1-novo-modulo/rootmanager.html">RootManager</a>
+            <a href="../1-novo-modulo/AppsRootModelFactory.html">AppsRootModelFactory</a>
+        </div>
+        <div>
+            <h3>CRUD</h3>
+            <a href="crud.html">Ver episódio</a>
+            <a href="ModuloProdutoBean.html">ModuloProdutoBean</a>
+        </div>
+        <div>
+            <h3>Conceitos</h3>
+            <a href="#">O que é uma Action</a>
+            <a href="#">O que é um Manager</a>
+            <a href="#">O que é um DAO</a>
+            <a href="#">O que é um Bean</a>
+            <a href="#">Fluxo de uma requisição</a>
+        </div>
+        <div>
+            <h3>Referências</h3>
+            <a href="#">CLAUDE.md</a>
+            <a href="#">Jasap — código-fonte</a>
+            <a href="#">app — modelo</a>
+            <a href="#">Banco PRD_TREINAMENTO</a>
+        </div>
+    </div>
+</div>
+
+</div>
+
+</div> <!-- layout -->
+
+<script src="../../js/docs.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const inner = document.getElementById('content-inner');
+    highlightAll(inner);
+    initCopyButtons(inner);
+    initAudioPlayers(inner);
+
+    if (localStorage.getItem('drawerOpen') === 'true') {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('hamburger').classList.add('open');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('theme-toggle').innerHTML = '&#9790;';
+        document.getElementById('hljs-light').disabled = true;
+        document.getElementById('hljs-dark').disabled  = false;
+    }
+});
+</script>
+
+</body>
+</html>
