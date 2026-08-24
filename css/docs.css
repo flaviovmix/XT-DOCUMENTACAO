@@ -1582,6 +1582,7 @@ body.dark .carousel-dot.active { background: #89b4fa; }
     font-weight: 600;
     font-size: 0.97em;
     color: #1a1a1a;
+    user-select: text;
 }
 
 .info-row-btn {

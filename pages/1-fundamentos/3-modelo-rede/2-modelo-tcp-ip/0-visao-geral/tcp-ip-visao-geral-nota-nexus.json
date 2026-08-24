@@ -1,0 +1,142 @@
+{
+  "nexusNote": 1,
+  "title": "Visão Geral do Modelo TCP/IP",
+  "description": "As 4 camadas do TCP/IP em ordem, o mapeamento com o OSI, encapsulamento e decapsulamento, por que o TCP/IP venceu e onde mora cada problema pro dev.",
+  "blocks": [
+    {
+      "type": "p",
+      "text": "O <strong>Modelo OSI</strong> é teoria — 7 camadas, escrito por comitê acadêmico nos anos 70/80. Quando ele ficou pronto, a internet já estava rodando há anos com outro modelo: o <strong>TCP/IP</strong>. Mais simples, com <strong>4 camadas</strong>, publicado aberto pela ARPANET. Foi o que pegou. Hoje, quando você abre um site ou conecta no banco, é o TCP/IP que entrega — o OSI continua existindo como vocabulário, mas o que roda de verdade tem 4 camadas."
+    },
+    {
+      "type": "toggle",
+      "text": "As 4 camadas em ordem — do topo até a base",
+      "children": [
+        {
+          "type": "p",
+          "text": "Mesma lógica do OSI: <strong>camada 4</strong> é o topo (perto do usuário), <strong>camada 1</strong> é a base (perto do hardware). A diferença é o número de fatias."
+        },
+        {
+          "type": "table",
+          "text": "",
+          "rows": [
+            ["#", "Camada", "O que faz", "Exemplos"],
+            ["4", "<strong>Aplicação</strong>", "Protocolos que o usuário enxerga (inclui formato, segurança, sessão)", "HTTP, HTTPS, DNS, SSH, SMTP, FTP"],
+            ["3", "<strong>Transporte</strong>", "Entrega entre processos do mesmo computador", "TCP, UDP, portas (80, 443, 5432)"],
+            ["2", "<strong>Internet</strong>", "Endereço lógico e roteamento entre redes", "IP, ICMP, roteador"],
+            ["1", "<strong>Acesso à rede</strong>", "Conexão física e local — bits no fio + vizinho da mesma rede", "Ethernet, Wi-Fi, MAC, ARP, cabo, fibra, rádio"]
+          ]
+        }
+      ]
+    },
+    {
+      "type": "toggle",
+      "text": "Mapeamento OSI → TCP/IP — agrupando camadas",
+      "children": [
+        {
+          "type": "p",
+          "text": "O TCP/IP simplifica agrupando camadas que, na prática, andam juntas:"
+        },
+        {
+          "type": "table",
+          "text": "",
+          "rows": [
+            ["OSI (7 camadas)", "TCP/IP (4 camadas)", "Comentário"],
+            ["7. Aplicação<br>6. Apresentação<br>5. Sessão", "<strong>4. Aplicação</strong>", "HTTP, TLS, cookies — tudo numa só. Quem programa não separa \"agora a camada 6 está fazendo TLS\""],
+            ["4. Transporte", "<strong>3. Transporte</strong>", "Idêntica. Mesmo nome, mesmo trabalho"],
+            ["3. Rede", "<strong>2. Internet</strong>", "Mesma coisa, nome diferente"],
+            ["2. Enlace<br>1. Física", "<strong>1. Acesso à rede</strong>", "Ethernet e o cabo viram uma camada só — quem mexe com placa de rede não separa os dois"]
+          ]
+        },
+        {
+          "type": "p",
+          "text": "Quando alguém fala \"isso é problema de camada 3\", está usando <strong>OSI</strong>. Quando o roteador da Cisco lista as camadas dele, usa <strong>TCP/IP</strong>. Os dois modelos convivem — um como linguagem, o outro como prática."
+        }
+      ]
+    },
+    {
+      "type": "toggle",
+      "text": "Encapsulamento — pacote descendo do navegador até o cabo",
+      "children": [
+        {
+          "type": "p",
+          "text": "A lógica é a mesma do OSI — só que com <strong>4 envelopes em vez de 7</strong>. Quando você manda uma requisição HTTP, ela <strong>desce</strong> pelas camadas:"
+        },
+        {
+          "type": "p",
+          "text": "<ol><li><strong>Camada 4 (Aplicação)</strong> — o navegador monta o HTTP: <code>GET /index.html HTTP/1.1</code>. Se for HTTPS, a própria camada 4 já criptografa (no OSI isso era trabalho da camada 6 separada)</li><li><strong>Camada 3 (Transporte)</strong> — TCP envelopa em segmentos: porta de origem, porta de destino, número de sequência</li><li><strong>Camada 2 (Internet)</strong> — IP envelopa em pacotes: IP de origem, IP de destino</li><li><strong>Camada 1 (Acesso à rede)</strong> — Ethernet envelopa em frames com MAC de origem e destino, e já transforma tudo em pulso elétrico no cabo (no OSI isso era separado em enlace + física)</li></ol>"
+        },
+        {
+          "type": "p",
+          "text": "Cada camada não sabe (nem precisa saber) o que tem dentro do envelope da anterior — só processa o seu próprio cabeçalho."
+        }
+      ]
+    },
+    {
+      "type": "toggle",
+      "text": "Decapsulamento — pacote subindo do outro lado",
+      "children": [
+        {
+          "type": "p",
+          "text": "No servidor, o caminho é inverso. O pacote <strong>sobe</strong> pelas 4 camadas, e cada uma lê e descarta seu cabeçalho:"
+        },
+        {
+          "type": "p",
+          "text": "<ol><li><strong>Camada 1</strong> — recebe o sinal do cabo, monta o frame Ethernet, confere o MAC de destino, passa o pacote IP pra cima</li><li><strong>Camada 2</strong> — lê o pacote IP, confere o IP de destino, descarta o cabeçalho IP</li><li><strong>Camada 3</strong> — lê o segmento TCP, confere a porta, entrega na fila do processo certo (Tomcat na 8080, PostgreSQL na 5432, etc.)</li><li><strong>Camada 4</strong> — descriptografa se for HTTPS, monta a requisição HTTP e entrega pra aplicação</li></ol>"
+        },
+        {
+          "type": "p",
+          "text": "O agente recebe o HTTP limpinho, sem precisar saber nada do que aconteceu nas camadas de baixo. Só processa a requisição e devolve a resposta — que vai descer de volta pelas 4 camadas no caminho inverso."
+        }
+      ]
+    },
+    {
+      "type": "toggle",
+      "text": "Por que o TCP/IP venceu na prática",
+      "children": [
+        {
+          "type": "p",
+          "text": "Três razões principais:"
+        },
+        {
+          "type": "p",
+          "text": "<ul><li><strong>Chegou primeiro.</strong> A internet já rodava em TCP/IP quando o OSI ficou pronto. Trocar tudo só pra usar um modelo acadêmico não fazia sentido.</li><li><strong>Mais simples.</strong> 4 camadas em vez de 7. A camada de sessão do OSI, por exemplo, na prática nunca foi muito útil — quase tudo dela migrou pra aplicação (cookies, tokens).</li><li><strong>Software livre.</strong> O TCP/IP veio do projeto ARPANET, financiado pelo governo americano, com protocolos publicados abertamente. Qualquer um podia implementar. O OSI veio com licenças pagas e ficou na gaveta.</li></ul>"
+        },
+        {
+          "type": "p",
+          "text": "Resultado: o OSI continua sendo o vocabulário pra descrever camadas em geral, mas o TCP/IP é o que efetivamente roda. Os dois convivem — um como linguagem, o outro como prática."
+        }
+      ]
+    },
+    {
+      "type": "toggle",
+      "text": "Por que importa pro dev — onde mora cada problema",
+      "children": [
+        {
+          "type": "p",
+          "text": "Escrevendo aplicação web, você mexe quase só na <strong>camada 4 do TCP/IP</strong> — HTTP, JSON, configuração de HTTPS. As outras 3 camadas estão funcionando embaixo sem você precisar pensar nelas. Mas é bom saber que estão lá:"
+        },
+        {
+          "type": "table",
+          "text": "",
+          "rows": [
+            ["Sintoma", "Camada TCP/IP", "Diagnóstico provável"],
+            ["HTTP 500 / 404 / 403", "4 (Aplicação)", "Erro na aplicação ou rota"],
+            ["Certificado inválido", "4 (Aplicação)", "TLS não fechou o handshake (no OSI seria camada 6)"],
+            ["<code>Connection refused</code>", "3 (Transporte)", "Porta fechada ou serviço caiu"],
+            ["Servidor demora pra responder", "3 (Transporte) ou 2 (Internet)", "TCP retransmitindo pacotes ou rota ruim"],
+            ["<code>Host unreachable</code>", "2 (Internet)", "Roteamento não acha o caminho"],
+            ["Cabo desconectado / Wi-Fi caiu", "1 (Acesso à rede)", "Problema físico ou de rede local"]
+          ]
+        },
+        {
+          "type": "p",
+          "text": "Cada camada tem suas ferramentas de diagnóstico:"
+        },
+        {
+          "type": "p",
+          "text": "<ul><li><strong>Camada 4</strong> — DevTools do navegador, logs do Tomcat / Apache, <code>curl -v</code></li><li><strong>Camada 3</strong> — <code>telnet host porta</code>, <code>netstat</code>, <code>nmap</code></li><li><strong>Camada 2</strong> — <code>ping</code>, <code>traceroute</code></li><li><strong>Todas as camadas</strong> — <code>Wireshark</code> (pacote por pacote do frame Ethernet até o HTTP)</li></ul>"
+        }
+      ]
+    }
+  ]
+}

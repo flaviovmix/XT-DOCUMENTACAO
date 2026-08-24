@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tudo Vira Número — CS50 — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+    <style>
+        /* Tudo desta animacao usa o prefixo tvn- para nao esbarrar no CSS
+           global da doc (.btn, .chip, .caption sao nomes disputados). */
+        .tvn-anim {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+        .tvn-toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .tvn-btn {
+            background: #2563eb; color: #fff; border: none;
+            padding: 8px 16px; border-radius: 6px; cursor: pointer;
+            font: inherit; font-size: 14px; font-weight: 500;
+        }
+        .tvn-btn:hover { background: #1d4ed8; }
+        .tvn-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+        .tvn-btn.prev { background: #6366f1; }
+        .tvn-btn.next { background: #10b981; }
+        .tvn-btn.secondary { background: #6b7280; }
+
+        .tvn-stage {
+            min-height: 250px; display: flex; flex-direction: column;
+            align-items: center; gap: 18px; padding: 8px 0 16px;
+        }
+
+        /* ─── Interruptores (bits) ─── */
+        .tvn-bits-wrap { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center; }
+        .tvn-bits-row { display: flex; gap: 10px; }
+        .tvn-bits-total {
+            font: 700 34px ui-monospace, SFMono-Regular, Consolas, monospace;
+            color: #059669; white-space: nowrap;
+        }
+        .tvn-bit { width: 46px; text-align: center; cursor: pointer; user-select: none; }
+        .tvn-bit .tvn-sw {
+            width: 40px; height: 64px; margin: 0 auto; position: relative;
+            border-radius: 20px; background: #e5e7eb; border: 2px solid #d1d5db;
+            transition: background .25s, border-color .25s;
+        }
+        .tvn-bit .tvn-knob {
+            position: absolute; left: 4px; bottom: 4px; width: 28px; height: 28px;
+            border-radius: 50%; background: #9ca3af;
+            transition: transform .25s, background .25s;
+        }
+        .tvn-bit.on .tvn-sw { background: #d1fae5; border-color: #10b981; box-shadow: 0 0 12px rgba(16,185,129,.35); }
+        .tvn-bit.on .tvn-knob { transform: translateY(-28px); background: #10b981; }
+        .tvn-bit .tvn-digit { font: 700 20px ui-monospace, Consolas, monospace; color: #9ca3af; margin-top: 6px; }
+        .tvn-bit.on .tvn-digit { color: #059669; }
+        .tvn-bit .tvn-peso { font: 600 12px ui-monospace, Consolas, monospace; color: #6b7280; margin-top: 2px; min-height: 15px; }
+
+        /* ─── Leitura do passo ─── */
+        .tvn-readout { font-size: 16px; color: #374151; text-align: center; min-height: 24px; }
+        .tvn-readout b { color: #065f46; }
+        .tvn-readout .tvn-mono { font-family: ui-monospace, Consolas, monospace; font-weight: 700; letter-spacing: 2px; }
+
+        /* ─── Combinações ─── */
+        .tvn-chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 560px; }
+        .tvn-chip {
+            font: 600 14px ui-monospace, Consolas, monospace; letter-spacing: 2px;
+            background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe;
+            border-radius: 6px; padding: 5px 10px; animation: tvnIn .3s both;
+        }
+        .tvn-chip .tvn-dec { color: #059669; letter-spacing: 0; margin-left: 7px; }
+        @keyframes tvnIn { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: scale(1); } }
+
+        /* ─── Odômetro ─── */
+        .tvn-odo-wrap { display: flex; gap: 40px; }
+        .tvn-odo { text-align: center; }
+        .tvn-odo-label { font-size: 12px; font-weight: 700; color: #6b7280; letter-spacing: 1px; margin-bottom: 8px; }
+        .tvn-odo-digits { display: flex; gap: 5px; justify-content: center; }
+        .tvn-wheel { width: 38px; height: 48px; overflow: hidden; border-radius: 6px; background: #111827; border: 2px solid #374151; }
+        .tvn-wheel.tick { border-color: #f59e0b; box-shadow: 0 0 10px rgba(245,158,11,.5); }
+        .tvn-strip { transition: transform .3s ease; }
+        .tvn-strip div {
+            height: 44px; line-height: 44px; text-align: center;
+            font: 700 24px ui-monospace, Consolas, monospace; color: #fbbf24;
+        }
+
+        /* ─── Cartões de leitura / cores ─── */
+        .tvn-cards { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+        .tvn-card {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+            padding: 12px 18px; text-align: center; min-width: 132px; animation: tvnIn .35s both;
+        }
+        .tvn-card .tvn-rot { font-size: 12px; font-weight: 700; color: #6b7280; letter-spacing: 1px; }
+        .tvn-card .tvn-val { font: 700 26px ui-monospace, Consolas, monospace; color: #1f2937; margin-top: 4px; }
+        .tvn-card .tvn-swatch { width: 60px; height: 34px; border-radius: 4px; margin: 8px auto 0; border: 1px solid #d1d5db; }
+
+        /* ─── Mensagem em ASCII ─── */
+        .tvn-msg { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+        .tvn-letra { text-align: center; animation: tvnIn .35s both; }
+        .tvn-letra .tvn-num {
+            font: 700 20px ui-monospace, Consolas, monospace; color: #1d4ed8;
+            background: #dbeafe; border: 2px solid #93c5fd; border-radius: 6px;
+            padding: 6px 14px; display: block;
+        }
+        .tvn-letra .tvn-seta { color: #9ca3af; font-size: 16px; line-height: 1.6; }
+        .tvn-letra .tvn-char { font: 700 30px ui-monospace, Consolas, monospace; color: #15803d; }
+
+        /* ─── Grade de pixels ─── */
+        .tvn-grid { display: grid; grid-template-columns: repeat(8, 26px); gap: 2px; }
+        .tvn-px { width: 26px; height: 26px; border-radius: 2px; animation: tvnIn .3s both; }
+        .tvn-px.zoom { outline: 3px solid #f59e0b; outline-offset: 1px; }
+
+        /* ─── Narração do passo ─── */
+        .tvn-caption {
+            background: #111827; color: #d1d5db; border-radius: 6px;
+            padding: 12px 16px; font-size: 15px; line-height: 1.5; min-height: 46px;
+        }
+        .tvn-caption .tvn-passo { color: #9ca3af; font-size: 12px; margin-right: 8px; }
+        .tvn-off { display: none !important; }
+    </style>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Tudo Vira Número</h1>
+
+<div class="audio-player" data-src="audio/tudo-vira-numero.mp3">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Dentro do computador não existe letra, cor nem som. Existe eletricidade, que passa ou não passa. Esta página percorre a primeira metade da aula 0 do CS50: como esse liga-desliga vira número, o número vira letra, e os mesmos três números viram uma cor. No fim fica claro que <strong>o significado não está nos bits, está no programa que lê</strong>.</p>
+
+<div class="tvn-anim">
+    <div class="tvn-toolbar">
+        <button class="tvn-btn" id="tvnPlay">▶ Seguir</button>
+        <button class="tvn-btn prev" id="tvnPrev" disabled>◄ Anterior</button>
+        <button class="tvn-btn next" id="tvnNext">→ Próximo</button>
+        <button class="tvn-btn secondary" id="tvnReset">↻ Reiniciar</button>
+    </div>
+
+    <div class="tvn-stage">
+        <div class="tvn-bits-wrap">
+            <div class="tvn-bits-row" id="tvnBits"></div>
+            <div class="tvn-bits-total" id="tvnTotal"></div>
+        </div>
+        <div class="tvn-readout" id="tvnReadout"></div>
+        <div class="tvn-chips tvn-off" id="tvnChips"></div>
+        <div class="tvn-odo-wrap tvn-off" id="tvnOdo">
+            <div class="tvn-odo">
+                <div class="tvn-odo-label">DECIMAL</div>
+                <div class="tvn-odo-digits" id="tvnOdoDec"></div>
+            </div>
+            <div class="tvn-odo">
+                <div class="tvn-odo-label">BINÁRIO</div>
+                <div class="tvn-odo-digits" id="tvnOdoBin"></div>
+            </div>
+        </div>
+        <div class="tvn-msg tvn-off" id="tvnMsg"></div>
+        <div class="tvn-cards tvn-off" id="tvnCards"></div>
+        <div class="tvn-grid tvn-off" id="tvnGrid"></div>
+    </div>
+
+    <div class="tvn-caption" id="tvnCaption"></div>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Bit e byte — a conta que dobra</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Um <strong>bit</strong> é um dígito binário: ou zero, ou um. Zero é desligado, um é ligado. Fisicamente isso são <strong>transistores</strong>, aos milhões e aos bilhões dentro da máquina, cada um podendo ligar e desligar.</p>
+
+            <p>O truque de contar com eles é que cada posição vale um número diferente. Com três bits, os pesos são 4, 2 e 1, da esquerda pra direita:</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>4</th><th>2</th><th>1</th><th>Vale</th></tr>
+                    <tr><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+                    <tr><td>0</td><td>0</td><td>1</td><td>1</td></tr>
+                    <tr><td>0</td><td>1</td><td>0</td><td>2</td></tr>
+                    <tr><td>0</td><td>1</td><td>1</td><td>3</td></tr>
+                    <tr><td>1</td><td>0</td><td>0</td><td>4</td></tr>
+                    <tr><td>1</td><td>1</td><td>1</td><td>7 (o máximo com 3 bits)</td></tr>
+                </table>
+            </div>
+
+            <p>Isso é <strong>base 2</strong>: os pesos são potências de dois, 2⁰ = 1, 2¹ = 2, 2² = 4. Cada bit novo <strong>dobra</strong> a quantidade de combinações. Um grupo de <strong>8 bits</strong> tem nome próprio, <strong>byte</strong>, e dá 256 combinações.</p>
+
+            <p>⚠️ O máximo de um byte é <strong>255</strong>, e não 256, porque o zero também ocupa uma das combinações. São 256 valores contando a partir do zero, então o maior deles é 255. Em binário, <code>11111111</code>.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">ASCII — como letra vira número</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Se o computador só guarda número, texto precisa virar número também. O acordo que resolve isso é o <strong>ASCII</strong> (American Standard Code for Information Interchange), uma tabela que diz qual número representa qual caractere.</p>
+
+            <p>A letra <code>A</code> maiúscula é o número <strong>65</strong>, que em binário fica <code>01000001</code>. Dá pra conferir pelos pesos de oito bits:</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>128</th><th>64</th><th>32</th><th>16</th><th>8</th><th>4</th><th>2</th><th>1</th></tr>
+                    <tr><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td></tr>
+                </table>
+            </div>
+
+            <p>Os bits ligados são o do 64 e o do 1. E 64 + 1 = 65.</p>
+
+            <p>Na aula, a mensagem de exemplo são três números: <strong>72, 73 e 33</strong>. Em ASCII isso é <code>H</code>, <code>I</code> e <code>!</code>, ou seja, "HI!". Guarde esses três números, porque eles voltam mais pra frente sendo outra coisa.</p>
+
+            <p>Detalhe que a aula faz questão de registrar: o ASCII usa <strong>128 códigos</strong>, de 0 a 127. Mas oito bits comportam 256 combinações. Sobra espaço.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Unicode — onde entram os emoji</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O <strong>Unicode</strong> é o padrão que ocupa o espaço que sobrou no ASCII, e vai muito além dele. Ele usa mais bits, o que abre lugar pra alfabetos do mundo inteiro, símbolos e emoji.</p>
+
+            <p>Um ponto prático que a aula levanta: o padrão define <strong>qual</strong> é o caractere, mas cada fabricante desenha do jeito dele. É por isso que a mesma carinha sai um pouco diferente em telefones diferentes. E o Unicode continua crescendo, com caracteres novos sendo adicionados.</p>
+
+            <p>Ou seja, quando você manda um emoji, não está mandando uma figurinha. Está mandando um número. O desenho quem escolhe é o aparelho do outro lado.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">RGB — os mesmos números virando cor</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Cor digital é guardada com três números: quanto de vermelho, quanto de verde e quanto de azul. <strong>Red, green, blue</strong>, daí <strong>RGB</strong>. Cada um usa um byte, então vai de <strong>0 até 255</strong>: zero é nada daquela cor, 255 é o máximo.</p>
+
+            <p>E aqui está o gancho da aula. Os números do exemplo são de propósito os mesmos de antes: <strong>72, 73 e 33</strong>. Como texto, isso era "HI!". Como cor, são 72 de vermelho, 73 de verde e 33 de azul, o que dá um <strong>tom escuro de amarelo</strong>.</p>
+
+            <p>Os bits são exatamente os mesmos. O que muda é o contexto em que eles são lidos: aberto num editor de texto, é uma palavra; aberto num editor de imagem, é a cor de um ponto na tela.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>R</th><th>G</th><th>B</th><th>Cor</th></tr>
+                    <tr><td>72</td><td>73</td><td>33</td><td>amarelo escuro (o exemplo da aula)</td></tr>
+                    <tr><td>0</td><td>0</td><td>0</td><td>preto (ausência das três)</td></tr>
+                    <tr><td>255</td><td>255</td><td>255</td><td>branco (o máximo das três)</td></tr>
+                </table>
+            </div>
+
+            <p>Se você já mexeu em página web ou em editor de imagem e viu coisa como <code>00</code> ou <code>FF</code>, é a mesma faixa de 0 a 255 escrita em outra base.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Pixel, vídeo e som — subindo a escada</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Cada ponto de uma imagem digital é um <strong>pixel</strong>, e cada pixel precisa daqueles três números, ou seja, três bytes. Uma imagem é uma coleção de valores RGB. Se você aproximar bastante o olho da tela, ou der zoom o suficiente numa figura, os quadradinhos aparecem.</p>
+
+            <p>Um <strong>vídeo</strong> é uma sequência de muitas imagens passando rápido, igual àqueles bloquinhos de papel com um desenho por página que viram animação quando você folheia. E <strong>música</strong> funciona pelo mesmo princípio, com combinações de bytes representando som.</p>
+
+            <p>É sempre a mesma ideia subindo um degrau: bit vira byte, byte vira número, número vira letra ou cor, cor vira pixel, pixel vira imagem, imagem vira vídeo.</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Event delegation no document — sobrevive ao rewrite de innerHTML do layout.js.
+(function () {
+    'use strict';
+
+    const CINZA = '#9ca3af';
+    let passoAtual = 0;
+    let timerAuto = null;
+    let timerOdo = null;
+
+    const $ = () => ({
+        bits: document.getElementById('tvnBits'),
+        total: document.getElementById('tvnTotal'),
+        readout: document.getElementById('tvnReadout'),
+        chips: document.getElementById('tvnChips'),
+        odo: document.getElementById('tvnOdo'),
+        odoDec: document.getElementById('tvnOdoDec'),
+        odoBin: document.getElementById('tvnOdoBin'),
+        msg: document.getElementById('tvnMsg'),
+        cards: document.getElementById('tvnCards'),
+        grid: document.getElementById('tvnGrid'),
+        caption: document.getElementById('tvnCaption'),
+        play: document.getElementById('tvnPlay'),
+        prev: document.getElementById('tvnPrev'),
+        next: document.getElementById('tvnNext'),
+        reset: document.getElementById('tvnReset')
+    });
+
+    // ─── Interruptores ───
+    function desenhaBits(padrao, pesos) {
+        const r = $();
+        r.bits.innerHTML = '';
+        const digitos = [...padrao];
+        digitos.forEach((ch, i) => {
+            const bit = document.createElement('div');
+            bit.className = 'tvn-bit' + (ch === '1' ? ' on' : '');
+            const peso = pesos ? Math.pow(2, digitos.length - 1 - i) : '';
+            bit.innerHTML = '<div class="tvn-sw"><div class="tvn-knob"></div></div>'
+                + '<div class="tvn-digit">' + ch + '</div>'
+                + '<div class="tvn-peso">' + peso + '</div>';
+            r.bits.appendChild(bit);
+        });
+        atualizaTotal();
+    }
+
+    function lerBinario() {
+        const r = $();
+        return [...r.bits.children].map(b => b.classList.contains('on') ? '1' : '0').join('');
+    }
+
+    function atualizaTotal() {
+        const r = $();
+        if (!r.bits.children.length) { r.total.textContent = ''; return; }
+        r.total.textContent = '= ' + parseInt(lerBinario(), 2);
+    }
+
+    // Só nos passos marcados como interativos mexer no interruptor muda o texto.
+    function atualizaLeituraInterativa() {
+        const r = $();
+        if (!r.bits.dataset.interativo) return;
+        const bin = lerBinario();
+        r.readout.innerHTML = '<span class="tvn-mono">' + bin + '</span> em decimal é <b>'
+            + parseInt(bin, 2) + '</b> (mexe nos interruptores!)';
+    }
+
+    // ─── Combinações ───
+    function desenhaChips(nBits) {
+        const r = $();
+        r.chips.innerHTML = '';
+        for (let i = 0; i < Math.pow(2, nBits); i++) {
+            const chip = document.createElement('div');
+            chip.className = 'tvn-chip';
+            chip.style.animationDelay = (i * 0.08) + 's';
+            chip.innerHTML = i.toString(2).padStart(nBits, '0') + '<span class="tvn-dec">= ' + i + '</span>';
+            r.chips.appendChild(chip);
+        }
+        r.chips.classList.remove('tvn-off');
+    }
+
+    // ─── Odômetro ───
+    function montaRoda(simbolos) {
+        const roda = document.createElement('div');
+        roda.className = 'tvn-wheel';
+        roda.innerHTML = '<div class="tvn-strip">' + simbolos.map(s => '<div>' + s + '</div>').join('') + '</div>';
+        return roda;
+    }
+
+    function giraRoda(roda, idx) {
+        const strip = roda.querySelector('.tvn-strip');
+        const anterior = strip.dataset.idx || '0';
+        strip.style.transform = 'translateY(-' + (idx * 44) + 'px)';
+        if (anterior !== String(idx)) {
+            strip.dataset.idx = idx;
+            roda.classList.add('tick');
+            setTimeout(() => roda.classList.remove('tick'), 250);
+        }
+    }
+
+    function rodaOdometro() {
+        const r = $();
+        r.odo.classList.remove('tvn-off');
+        r.odoDec.innerHTML = '';
+        r.odoBin.innerHTML = '';
+        const DIGITOS = ['0','1','2','3','4','5','6','7','8','9'];
+        const dezena = montaRoda(DIGITOS);
+        const unidade = montaRoda(DIGITOS);
+        r.odoDec.appendChild(dezena);
+        r.odoDec.appendChild(unidade);
+        const binarias = Array.from({ length: 5 }, () => montaRoda(['0','1']));
+        binarias.forEach(w => r.odoBin.appendChild(w));
+
+        let n = 0;
+        const passo = () => {
+            giraRoda(dezena, Math.floor(n / 10));
+            giraRoda(unidade, n % 10);
+            const b = n.toString(2).padStart(5, '0');
+            binarias.forEach((w, i) => giraRoda(w, Number(b[i])));
+            n++;
+            if (n <= 31) timerOdo = setTimeout(passo, 1150);
+        };
+        passo();
+    }
+
+    function paraOdometro() {
+        if (timerOdo) { clearTimeout(timerOdo); timerOdo = null; }
+    }
+
+    // ─── Mensagem em ASCII ───
+    function desenhaMensagem(pares) {
+        const r = $();
+        r.msg.innerHTML = '';
+        pares.forEach(([numero, letra], i) => {
+            const bloco = document.createElement('div');
+            bloco.className = 'tvn-letra';
+            bloco.style.animationDelay = (i * 0.25) + 's';
+            bloco.innerHTML = '<span class="tvn-num">' + numero + '</span>'
+                + '<div class="tvn-seta">▼</div>'
+                + '<div class="tvn-char">' + letra + '</div>';
+            r.msg.appendChild(bloco);
+        });
+        r.msg.classList.remove('tvn-off');
+    }
+
+    // ─── Cartões (leituras e cores) ───
+    function desenhaCartoes(itens) {
+        const r = $();
+        r.cards.innerHTML = '';
+        itens.forEach((item, i) => {
+            const card = document.createElement('div');
+            card.className = 'tvn-card';
+            card.style.animationDelay = (i * 0.15) + 's';
+            const corpo = item.cor
+                ? '<div class="tvn-val" style="font-size:15px;">' + item.valor + '</div>'
+                  + '<div class="tvn-swatch" style="background:' + item.cor + ';"></div>'
+                : '<div class="tvn-val">' + item.valor + '</div>';
+            card.innerHTML = '<div class="tvn-rot">' + item.rotulo + '</div>' + corpo;
+            r.cards.appendChild(card);
+        });
+        r.cards.classList.remove('tvn-off');
+    }
+
+    // ─── Grade de pixels ───
+    // Carinha simples de 8x8: 0 = fundo, 1 = amarelo, 2 = traço escuro.
+    const CARINHA = [
+        '00111100',
+        '01111110',
+        '11211211',
+        '11111111',
+        '11111111',
+        '12111121',
+        '01211110',
+        '00111100'
+    ];
+    const PALETA = { '0': '#f3f4f6', '1': '#facc15', '2': '#78350f' };
+
+    function desenhaGrade(zoom) {
+        const r = $();
+        r.grid.innerHTML = '';
+        CARINHA.join('').split('').forEach((codigo, i) => {
+            const px = document.createElement('div');
+            px.className = 'tvn-px' + (zoom === i ? ' zoom' : '');
+            px.style.background = PALETA[codigo];
+            px.style.animationDelay = (i * 0.004) + 's';
+            r.grid.appendChild(px);
+        });
+        r.grid.classList.remove('tvn-off');
+    }
+
+    // ─── Os passos ───
+    // Cada passo redesenha o palco inteiro, então Anterior e Próximo andam livres.
+    const passos = [
+        {
+            cap: 'Dentro do computador não existe letra, cor nem som. Existe eletricidade: passa ou não passa.',
+            render() { desenhaBits('0'); $().readout.innerHTML = 'transistor <b>desligado</b>'; }
+        },
+        {
+            cap: 'O transistor é uma chavinha. Desligado é 0, ligado é 1. Um dígito desses é um bit.',
+            render() { desenhaBits('1'); $().readout.innerHTML = 'transistor <b>ligado</b>, isso é um <b>bit</b>'; }
+        },
+        {
+            cap: 'Com 1 bit dá pra representar 2 coisas.',
+            render() { desenhaBits('0'); $().readout.innerHTML = '1 bit → <b>2 combinações</b>'; desenhaChips(1); }
+        },
+        {
+            cap: 'Cada bit novo dobra as combinações. Com 2 bits, 4.',
+            render() { desenhaBits('00'); $().readout.innerHTML = '2 bits → <b>4 combinações</b>'; desenhaChips(2); }
+        },
+        {
+            cap: 'Com 3 bits, 8. É o exemplo das três lâmpadas da aula: cada posição vale 4, 2 e 1.',
+            render() {
+                desenhaBits('000', true);
+                $().readout.innerHTML = '3 bits → <b>8 combinações</b>, de 0 a 7';
+                desenhaChips(3);
+            }
+        },
+        {
+            cap: 'Acende as três e você chega no máximo de 3 bits: 4 mais 2 mais 1 dá 7.',
+            render() { desenhaBits('111', true); $().readout.innerHTML = '4 + 2 + 1 = <b>7</b>, o teto de 3 bits'; }
+        },
+        {
+            cap: 'E o 8? Três interruptores param no 7. Pra fazer 8 entra o quarto. É sempre assim que o binário cresce.',
+            render() { desenhaBits('1000', true); $().readout.innerHTML = '3 bits chegam no 7, o <b>8</b> pede o 4º bit'; }
+        },
+        {
+            cap: 'A dobra não para: 4 bits dão 16, 5 dão 32, 6 dão 64, 7 dão 128. Com 8, dá 256. E um grupo de 8 bits tem nome próprio: byte.',
+            render() { desenhaBits('00000000', true); $().readout.innerHTML = '8 bits = 1 <b>byte</b> → <b>256 combinações</b>, de 0 a 255'; }
+        },
+        {
+            dur: 39000,
+            cap: 'Contar em binário é igual odômetro de carro: o dígito estoura, volta pro zero e o vizinho da esquerda anda um. Aqui, de 0 a 31 nos dois sistemas. Repara no estouro do 15 pro 16, quando todo mundo vira de uma vez.',
+            render() { const r = $(); r.bits.innerHTML = ''; r.total.textContent = ''; r.readout.innerHTML = ''; rodaOdometro(); }
+        },
+        {
+            cap: 'Um byte em ação: este padrão aqui é o número 65. Clica nos interruptores pra montar outros.',
+            render() {
+                desenhaBits('01000001', true);
+                $().bits.dataset.interativo = '1';
+                $().readout.innerHTML = '<span class="tvn-mono">01000001</span> em decimal é <b>65</b> (mexe nos interruptores!)';
+            }
+        },
+        {
+            cap: 'O ASCII é um acordo: cada número representa um caractere. O 65 é a letra A maiúscula.',
+            render() {
+                desenhaBits('01000001', true);
+                $().readout.innerHTML = 'em ASCII, <b>65</b> é a letra <b>A</b>';
+                desenhaMensagem([[65, 'A']]);
+            }
+        },
+        {
+            cap: 'Junta três números e você tem uma mensagem. A da aula é 72, 73, 33.',
+            render() {
+                const r = $();
+                r.bits.innerHTML = ''; r.total.textContent = '';
+                r.readout.innerHTML = 'três números, três caracteres: <b>HI!</b>';
+                desenhaMensagem([[72, 'H'], [73, 'I'], [33, '!']]);
+            }
+        },
+        {
+            cap: 'O Unicode é o mesmo acordo esticado: mais bits, então cabem alfabetos do mundo inteiro e emoji. O padrão diz qual é o caractere; o desenho quem escolhe é o aparelho de quem recebe.',
+            render() {
+                const r = $();
+                r.bits.innerHTML = ''; r.total.textContent = '';
+                r.readout.innerHTML = 'você não manda a figurinha, manda o <b>número</b>';
+                desenhaCartoes([
+                    { rotulo: 'NO SEU', valor: '😀' },
+                    { rotulo: 'O NÚMERO', valor: 'U+1F600' },
+                    { rotulo: 'NO DELE', valor: '😃' }
+                ]);
+            }
+        },
+        {
+            cap: 'Agora a virada. Os MESMOS 72, 73 e 33, lidos como cor: 72 de vermelho, 73 de verde, 33 de azul. Dá um tom escuro de amarelo.',
+            render() {
+                const r = $();
+                r.bits.innerHTML = ''; r.total.textContent = '';
+                r.readout.innerHTML = '<span class="tvn-mono">72 73 33</span>: em texto era <b>HI!</b>, em imagem é <b>cor</b>';
+                desenhaCartoes([
+                    { rotulo: 'COMO TEXTO', valor: 'HI!' },
+                    { rotulo: 'COMO COR', valor: 'rgb(72,73,33)', cor: 'rgb(72,73,33)' }
+                ]);
+            }
+        },
+        {
+            cap: 'Cada canal vai de 0 a 255, porque cada um é um byte. Zero nos três dá preto, o máximo nos três dá branco.',
+            render() {
+                const r = $();
+                r.bits.innerHTML = ''; r.total.textContent = '';
+                r.readout.innerHTML = 'três bytes por ponto da tela';
+                desenhaCartoes([
+                    { rotulo: '0, 0, 0', valor: 'preto', cor: 'rgb(0,0,0)' },
+                    { rotulo: '72, 73, 33', valor: 'amarelo escuro', cor: 'rgb(72,73,33)' },
+                    { rotulo: '255, 255, 255', valor: 'branco', cor: 'rgb(255,255,255)' }
+                ]);
+            }
+        },
+        {
+            cap: 'Uma imagem é só um monte desses pontos, os pixels. Dá zoom o suficiente e os quadradinhos aparecem.',
+            render() {
+                const r = $();
+                r.bits.innerHTML = ''; r.total.textContent = '';
+                r.readout.innerHTML = '64 pixels, cada um com seu <b>RGB</b>';
+                desenhaGrade(-1);
+            }
+        },
+        {
+            cap: 'Aquele pixel destacado é só três números. Vídeo é uma sequência dessas imagens passando rápido, e som é a mesma ideia com outros bytes. O significado não está nos bits: está no programa que lê.',
+            render() {
+                const r = $();
+                r.bits.innerHTML = ''; r.total.textContent = '';
+                r.readout.innerHTML = 'um pixel = <span class="tvn-mono">250 204 21</span>';
+                desenhaGrade(27);
+            }
+        }
+    ];
+
+    function mostra(idx) {
+        paraOdometro();
+        passoAtual = idx;
+        const r = $();
+        if (!r.caption) return;
+
+        r.chips.classList.add('tvn-off');
+        r.odo.classList.add('tvn-off');
+        r.msg.classList.add('tvn-off');
+        r.cards.classList.add('tvn-off');
+        r.grid.classList.add('tvn-off');
+        r.readout.innerHTML = '';
+        delete r.bits.dataset.interativo;
+
+        passos[idx].render();
+        r.caption.innerHTML = '<span class="tvn-passo">' + (idx + 1) + '/' + passos.length + '</span>' + passos[idx].cap;
+        r.prev.disabled = idx === 0;
+        r.next.disabled = idx === passos.length - 1;
+    }
+
+    function paraAuto() {
+        if (timerAuto) { clearTimeout(timerAuto); timerAuto = null; }
+        const r = $();
+        if (r.play) r.play.textContent = '▶ Seguir';
+    }
+
+    function agendaAuto() {
+        timerAuto = setTimeout(() => {
+            if (passoAtual < passos.length - 1) { mostra(passoAtual + 1); agendaAuto(); }
+            else paraAuto();
+        }, passos[passoAtual].dur || 4200);
+    }
+
+    document.addEventListener('click', e => {
+        const bit = e.target.closest('.tvn-bit');
+        if (bit) {
+            bit.classList.toggle('on');
+            bit.querySelector('.tvn-digit').textContent = bit.classList.contains('on') ? '1' : '0';
+            atualizaTotal();
+            atualizaLeituraInterativa();
+            return;
+        }
+        const botao = e.target.closest('button');
+        if (!botao) return;
+        if (botao.id === 'tvnPlay') {
+            if (timerAuto) { paraAuto(); return; }
+            botao.textContent = '⏸ Pausar';
+            if (passoAtual === passos.length - 1) mostra(0);
+            agendaAuto();
+        } else if (botao.id === 'tvnNext') { paraAuto(); mostra(passoAtual + 1); }
+        else if (botao.id === 'tvnPrev') { paraAuto(); mostra(passoAtual - 1); }
+        else if (botao.id === 'tvnReset') { paraAuto(); mostra(0); }
+    });
+
+    // O layout.js reescreve o body; só desenhar quando o palco existir de fato.
+    function iniciar() {
+        if (document.getElementById('tvnCaption')) mostra(0);
+        else setTimeout(iniciar, 60);
+    }
+    iniciar();
+})();
+</script>
+
+</body>
+</html>
