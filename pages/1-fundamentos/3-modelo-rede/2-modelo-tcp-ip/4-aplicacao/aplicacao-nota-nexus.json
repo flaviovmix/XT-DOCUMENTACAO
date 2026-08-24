@@ -1,0 +1,71 @@
+{
+  "nexusNote": 1,
+  "title": "Camada 4 — Aplicação",
+  "description": "Os protocolos que o usuário enxerga (HTTP, SMTP, DNS, SSH). 2 episódios: Visão Geral e HTTP.",
+  "blocks": [
+    {
+      "type": "p",
+      "text": "Os protocolos que o usuário enxerga — HTTP, SMTP, DNS, SSH. No TCP/IP essa camada combina <strong>aplicação + apresentação + sessão</strong> do OSI numa só."
+    },
+    {
+      "type": "toggle",
+      "text": "00 - Visão Geral",
+      "children": [
+        {
+          "type": "p",
+          "text": "<i>A camada onde o dev passa quase 100% do tempo — protocolos com nome próprio</i>"
+        },
+        {
+          "type": "audio",
+          "text": ""
+        },
+        {
+          "type": "h3",
+          "text": "Resumo"
+        },
+        {
+          "type": "p",
+          "text": "A camada Aplicação do TCP/IP é onde mora tudo que tem nome próprio que o usuário conhece: <strong>HTTP</strong> (web), <strong>SMTP/IMAP/POP3</strong> (email), <strong>FTP/SFTP</strong> (transferência de arquivo), <strong>DNS</strong> (traduzir nome em IP), <strong>SSH</strong> (terminal remoto), <strong>WebSocket</strong> (canal aberto pra mensagem)."
+        },
+        {
+          "type": "p",
+          "text": "Tudo o que está abaixo (transporte, internet, acesso à rede) existe pra entregar a mensagem dessa camada do remetente até o destinatário sem que o usuário precise pensar em nada disso. <strong>No OSI essa camada combina 5 (Sessão) + 6 (Apresentação) + 7 (Aplicação) — o TCP/IP juntou tudo numa só porque na prática essas três sempre acabam misturadas dentro da aplicação.</strong>"
+        },
+        {
+          "type": "p",
+          "text": "<strong>Tags:</strong> HTTP · SMTP · DNS · SSH"
+        }
+      ]
+    },
+    {
+      "type": "toggle",
+      "text": "01 - HTTP",
+      "children": [
+        {
+          "type": "p",
+          "text": "<i>O protocolo da web — métodos, headers, status codes</i>"
+        },
+        {
+          "type": "audio",
+          "text": ""
+        },
+        {
+          "type": "h3",
+          "text": "Resumo"
+        },
+        {
+          "type": "p",
+          "text": "O HTTP (HyperText Transfer Protocol) é a base da web. Modelo simples: cliente faz <strong>request</strong>, servidor manda <strong>response</strong>. O request tem método (<code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>DELETE</code>, <code>PATCH</code>), URL, headers (Cookie, User-Agent, Authorization) e opcionalmente um body. A response tem status code (200 OK, 404 Not Found, 500 Internal Server Error), headers e body (geralmente HTML, JSON ou imagem)."
+        },
+        {
+          "type": "p",
+          "text": "Versões importantes: <strong>HTTP/1.1</strong> (1997, ainda muito usado, conexão keep-alive), <strong>HTTP/2</strong> (2015, multiplexação binária — várias requests na mesma conexão), <strong>HTTP/3</strong> (2022, sobre QUIC/UDP, sem head-of-line blocking). <strong>HTTPS</strong> é HTTP rodando em cima de TLS — porta 443. <strong>No OSI seria camada 7 (Aplicação) com partes na 6 (TLS na Apresentação).</strong>"
+        },
+        {
+          "type": "p",
+          "text": "<strong>Tags:</strong> GET/POST · status code · HTTPS · HTTP/3"
+        }
+      ]
+    }
+  ]
+}

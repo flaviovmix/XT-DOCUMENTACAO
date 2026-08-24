@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scratch na Prática — CS50 — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+    <style>
+        /* Prefixo scr- pra não esbarrar no CSS global da doc. */
+        .scr-anim {
+            background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px;
+            padding: 20px; margin: 24px 0;
+        }
+        .scr-toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .scr-btn {
+            background: #2563eb; color: #fff; border: none;
+            padding: 8px 16px; border-radius: 6px; cursor: pointer;
+            font: inherit; font-size: 14px; font-weight: 500;
+        }
+        .scr-btn:hover { background: #1d4ed8; }
+        .scr-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+        .scr-btn.prev { background: #6366f1; }
+        .scr-btn.next { background: #10b981; }
+        .scr-btn.secondary { background: #6b7280; }
+
+        .scr-stage { min-height: 300px; display: flex; align-items: flex-start; justify-content: center; gap: 30px; flex-wrap: wrap; padding: 8px 0 16px; }
+
+        /* ─── Blocos estilo Scratch ─── */
+        .scr-pilha { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
+        .scr-pilha + .scr-pilha { margin-top: 18px; }
+        .scr-bloco {
+            font: 600 13px system-ui, sans-serif; color: #fff;
+            padding: 8px 14px; border-radius: 5px; white-space: nowrap;
+            box-shadow: 0 1px 2px rgba(0,0,0,.18); animation: scrIn .3s both;
+        }
+        .scr-bloco.evento  { background: #d4a015; border-radius: 12px 12px 5px 5px; }
+        .scr-bloco.som     { background: #cf63cf; }
+        .scr-bloco.controle{ background: #ee7d16; }
+        .scr-bloco.custom  { background: #ff6680; }
+        .scr-bloco.sensor  { background: #5cb1d6; }
+        .scr-bloco.movimento { background: #4c97ff; }
+        .scr-bloco.recuo   { margin-left: 22px; }
+        .scr-bloco.piscando { animation: scrPisca 1s ease-in-out infinite; }
+        .scr-bloco .scr-arg {
+            background: rgba(255,255,255,.92); color: #1f2937; border-radius: 10px;
+            padding: 1px 9px; margin: 0 3px; font-weight: 700;
+        }
+        @keyframes scrIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: none; } }
+        @keyframes scrPisca { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } 50% { box-shadow: 0 0 0 4px rgba(239,68,68,.55); } }
+
+        .scr-guardado { opacity: .32; filter: grayscale(.6); }
+        .scr-etiqueta { font: 700 11px system-ui, sans-serif; color: #6b7280; letter-spacing: 1px; margin-bottom: 6px; }
+
+        .scr-contador {
+            font: 700 13px ui-monospace, Consolas, monospace; color: #374151;
+            background: #fff; border: 1px solid #e5e7eb; border-radius: 6px;
+            padding: 8px 14px; margin-top: 12px; display: inline-block;
+        }
+        .scr-contador b { color: #dc2626; }
+
+        /* ─── Palco ─── */
+        .scr-palco {
+            position: relative; width: 300px; height: 225px; background: #fff;
+            border: 2px solid #d1d5db; border-radius: 8px; overflow: hidden;
+        }
+        .scr-eixo { position: absolute; background: #f1f5f9; }
+        .scr-eixo.h { left: 0; right: 0; top: 50%; height: 1px; background: #e2e8f0; }
+        .scr-eixo.v { top: 0; bottom: 0; left: 50%; width: 1px; background: #e2e8f0; }
+        .scr-gato {
+            position: absolute; width: 34px; height: 34px; font-size: 28px; line-height: 34px;
+            text-align: center; transition: left .25s ease, top .25s ease;
+        }
+        .scr-balao {
+            position: absolute; background: #fff; border: 2px solid #cbd5e1;
+            border-radius: 12px; padding: 5px 11px; font: 600 13px system-ui, sans-serif;
+            color: #1f2937; white-space: nowrap; animation: scrIn .25s both;
+        }
+        .scr-origem {
+            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+            font: 700 10px ui-monospace, Consolas, monospace; color: #94a3b8;
+        }
+        .scr-parede { position: absolute; background: #cbd5e1; }
+
+        .scr-caption {
+            background: #111827; color: #d1d5db; border-radius: 6px;
+            padding: 12px 16px; font-size: 15px; line-height: 1.5; min-height: 46px;
+        }
+        .scr-caption .scr-passo { color: #9ca3af; font-size: 12px; margin-right: 8px; }
+        .scr-off { display: none !important; }
+    </style>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Scratch na Prática</h1>
+
+<div class="audio-player" data-src="audio/scratch-na-pratica.mp3">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>As duas partes anteriores montaram a teoria: o computador guarda tudo como número, e um algoritmo é um passo a passo com quatro blocos básicos dentro. Agora esses blocos viram peças que encaixam na tela. O Scratch é uma linguagem visual do MIT, e a vantagem dela é que você arrasta peça em vez de digitar, então não perde tempo com chave, ponto e vírgula e parêntese fora do lugar.</p>
+
+<h3>O miado, reescrito quatro vezes</h3>
+
+<p>O mesmo programa, do jeito feio pro jeito bom. O objetivo nunca muda: o gato mia três vezes, com pausa entre uma e outra.</p>
+
+<div class="scr-anim">
+    <div class="scr-toolbar">
+        <button class="scr-btn" id="miaPlay">▶ Seguir</button>
+        <button class="scr-btn prev" id="miaPrev" disabled>◄ Anterior</button>
+        <button class="scr-btn next" id="miaNext">→ Próximo</button>
+        <button class="scr-btn secondary" id="miaReset">↻ Reiniciar</button>
+    </div>
+
+    <div class="scr-stage" id="miaStage"></div>
+
+    <div class="scr-caption" id="miaCaption"></div>
+</div>
+
+<h3>O palco</h3>
+
+<p>Onde o código ganha vida. O centro do palco é o ponto zero, zero, e é ali que o gato começa.</p>
+
+<div class="scr-anim">
+    <div class="scr-toolbar">
+        <button class="scr-btn" id="palPlay">▶ Seguir</button>
+        <button class="scr-btn prev" id="palPrev" disabled>◄ Anterior</button>
+        <button class="scr-btn next" id="palNext">→ Próximo</button>
+        <button class="scr-btn secondary" id="palReset">↻ Reiniciar</button>
+    </div>
+
+    <div class="scr-stage" id="palStage"></div>
+
+    <div class="scr-caption" id="palCaption"></div>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A tela do Scratch, e os primeiros dois programas</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A tela tem três partes: à <strong>esquerda</strong> a paleta com os blocos disponíveis, no <strong>centro</strong> a área onde você monta o programa, e à <strong>direita</strong> o palco, onde o gato fica e o código ganha vida. O palco tem coordenadas, e o centro é o ponto <code>(0, 0)</code>.</p>
+
+            <p>O primeiro programa tem dois blocos: <em>quando a bandeira verde for clicada</em> e <em>diga "hello, world"</em>. Clicou, o gato fala. Já é o esquema de entrada e saída, com o "diga" fazendo a saída.</p>
+
+            <p>O segundo já é interativo e traz três ideias de uma vez:</p>
+            <ul>
+                <li><strong>pergunte e espere</strong> pede a informação ao usuário (é a entrada)</li>
+                <li><strong>resposta</strong> é uma <strong>variável</strong>, uma caixinha que guarda o que a pessoa digitou</li>
+                <li><strong>junte</strong> é uma <strong>função</strong> que gruda dois textos, o "hello," com o nome guardado</li>
+            </ul>
+
+            <p>A aula mostra ainda a versão falada, trocando o "diga" pelo bloco <em>fale</em>, e brinca com o bloco <em>defina a voz como</em>, testando vozes tipo gatinho e gigante.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Por que copiar e colar é o sinal de alerta</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A versão 1 do miado funciona: toca o som, espera, toca, espera, toca. Seis peças, com o mesmo par repetido três vezes. A aula é direta sobre isso: <strong>quando você copia e cola código, ou duplica peças, provavelmente está fazendo algo errado</strong>.</p>
+
+            <p>E o argumento não é estético, é prático, e a aula demonstra ao vivo. O professor resolve trocar a pausa de 1 segundo para 2 segundos, e precisa alterar <strong>em dois lugares</strong>. Com seis peças ainda dá. A pergunta que ele faz é: e se fossem 60? 600? 6.000?</p>
+
+            <p>A resposta é que uma hora você esquece um. O código está <strong>correto</strong> e <strong>mal projetado</strong> ao mesmo tempo, e são coisas diferentes.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">As quatro versões, e onde cada conceito entra</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Versão</th><th>O que muda</th><th>Conceito</th></tr>
+                    <tr><td>1</td><td>tocar e esperar, três vezes seguidas</td><td>nenhum, é repetição na mão</td></tr>
+                    <tr><td>2</td><td>um <em>repita 3 vezes</em> envolvendo o par</td><td><strong>loop</strong></td></tr>
+                    <tr><td>3</td><td>um bloco <em>defina miar</em> guardando o par</td><td><strong>função própria</strong></td></tr>
+                    <tr><td>4</td><td><em>defina miar n vezes</em>, recebendo um número</td><td><strong>argumento</strong> (a aula usa essa palavra)</td></tr>
+                </table>
+            </div>
+
+            <p>Na versão 3 acontece uma coisa que vale nomear. Depois de criar o bloco <em>miar</em>, o professor arrasta a definição para longe e diz que agora é "fora de vista, fora da cabeça". A mecânica continua existindo, só não precisa mais ser olhada. <strong>Isso é abstração</strong>: você inventou uma peça nova, com nome próprio, e passa a usar o nome.</p>
+
+            <p>Repare que o programa principal da versão 4 é quase nada. Todo o detalhe foi para dentro do bloco que você mesmo criou.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Condicionais, sensores e o laço infinito</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Condicional é o programa verificar se algo aconteceu e, se aconteceu, agir. No Scratch isso quase sempre vem junto com o bloco <em>sempre</em>, que faz a verificação rodar sem parar.</p>
+
+            <p>O exemplo da aula: dentro de um <em>sempre</em>, pergunta se está <em>tocando no ponteiro do mouse</em>. Se estiver, toca o miado. O resultado é um gato que mia quando o mouse encosta nele.</p>
+
+            <p>Depois ela troca o sensor: em vez do mouse, o <strong>movimento captado pela câmera</strong>, com o bloco <em>quando o movimento do vídeo for maior que 10</em>. Mesma lógica, entrada diferente.</p>
+
+            <p>Um conselho prático que a aula dá nesse ponto e que vale repetir: programação é tentativa e erro, e falar sozinho sobre o problema ajuda.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Oscartime — o primeiro programa completo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>É um jogo do próprio professor: arrastar o lixo que cai até a lata do Oscar. A aula desmonta ele em cinco pedaços, e o quinto é o que interessa mais.</p>
+
+            <ol>
+                <li><strong>O poste</strong> é só cenário, sem código.</li>
+                <li><strong>O Oscar troca de fantasia</strong>: dentro de um <em>sempre</em>, se o mouse está tocando nele, muda para a fantasia 2, senão volta para a 1. Aqui aparece o <em>senão</em>, o outro lado da condicional.</li>
+                <li><strong>O lixo cai</strong>: vai para o topo (y = 180) com x sorteado, e dentro de um <em>sempre</em> muda o y em menos um. Um pixel por vez, repetido para sempre, é queda.</li>
+                <li><strong>A interação</strong>: outro <em>sempre</em> pergunta se o lixo está tocando o Oscar. Se estiver, o lixo volta para o topo. É o que faz o jogo não acabar.</li>
+                <li><strong>O refino</strong>: "ir para o topo com x sorteado" aparecia nos pedaços 3 e 4, escrito duas vezes. Vira um bloco próprio chamado <em>ir para o topo</em>, e os dois scripts passam a chamá-lo.</li>
+            </ol>
+
+            <p>Repare que o pedaço 5 é exatamente o mesmo movimento da versão 3 do miado, agora resolvendo duplicação de verdade dentro de um jogo. Não é exercício: é o problema aparecendo sozinho.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Ivy's Hardest Game — várias coisas ao mesmo tempo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O segundo jogo é um labirinto, e o assunto dele é movimento. Também cinco pedaços:</p>
+
+            <ol>
+                <li><strong>O esqueleto</strong>: vai para o centro e entra num <em>sempre</em> que chama duas funções próprias, <em>escutar o teclado</em> e <em>sentir as paredes</em>. Só isso. O programa principal ficou legível e cada função guarda o detalhe.</li>
+                <li><strong>Escutar o teclado</strong>: quatro condicionais, uma por seta. Cima muda y em mais um, baixo em menos um, direita muda x em mais um, esquerda em menos um.</li>
+                <li><strong>Sentir as paredes</strong>: se está tocando a parede da esquerda, empurra para a direita, e vice-versa. É o que impede atravessar o cenário.</li>
+                <li><strong>O inimigo que vai e volta</strong>: começa apontando na direção 90 (direita), anda um passo, e se está tocando a parede da esquerda <strong>ou</strong> a da direita, gira 180 graus. Esse "ou" é uma expressão booleana composta, duas perguntas numa só.</li>
+                <li><strong>O perseguidor</strong>: nasce numa posição aleatória e, dentro de um <em>sempre</em>, aponta na direção do outro sprite e anda um passo. Duas linhas, e já é um inimigo que persegue.</li>
+            </ol>
+
+            <p>E o detalhe que fecha a aula: todos esses sprites rodam <strong>ao mesmo tempo</strong>, cada um com o seu próprio <em>sempre</em>, no mesmo palco. O índice oficial da semana dá nome a isso: <strong>threads</strong>. É um assunto que costuma ser considerado difícil, e no Scratch ele aparece de graça, só por existirem vários personagens com scripts próprios.</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Event delegation no document — sobrevive ao rewrite de innerHTML do layout.js.
+(function () {
+    'use strict';
+
+    function bloco(classe, html) {
+        return '<div class="scr-bloco ' + classe + '">' + html + '</div>';
+    }
+    function arg(v) { return '<span class="scr-arg">' + v + '</span>'; }
+
+    const BANDEIRA = bloco('evento', '⚑ quando a bandeira verde for clicada');
+    const TOCAR = bloco('som recuo', '♪ toque o som ' + arg('miado') + ' até o fim');
+
+    function espera(seg, piscando) {
+        return bloco('controle recuo' + (piscando ? ' piscando' : ''), '⏱ espere ' + arg(seg) + ' segundos');
+    }
+
+    function pilha(etiqueta, corpo, guardada) {
+        return '<div>'
+            + (etiqueta ? '<div class="scr-etiqueta">' + etiqueta + '</div>' : '')
+            + '<div class="scr-pilha' + (guardada ? ' scr-guardado' : '') + '">' + corpo + '</div>'
+            + '</div>';
+    }
+
+    function conta(pecas, aviso) {
+        return '<div class="scr-contador">' + pecas + ' peças'
+            + (aviso ? ' · <b>' + aviso + '</b>' : '') + '</div>';
+    }
+
+    // ══════════ Widget 1: o miado em quatro versões ══════════
+    const passosMiado = [
+        {
+            cap: 'Versão 1. Tocar o som, esperar, tocar, esperar, tocar. Funciona, e o gato mia três vezes.',
+            render: () => pilha('VERSÃO 1', BANDEIRA + TOCAR + espera(1) + TOCAR + espera(1) + TOCAR) + conta(6)
+        },
+        {
+            cap: 'Agora o professor decide que 1 segundo é pouco e troca para 2. Repara onde ele precisa mexer: em DOIS lugares. Com 6 peças dá. E se fossem 600?',
+            render: () => pilha('VERSÃO 1', BANDEIRA + TOCAR + espera(2, true) + TOCAR + espera(2, true) + TOCAR)
+                + conta(6, 'mudou em 2 lugares')
+        },
+        {
+            cap: 'Versão 2. Um bloco repita envolve o par, e a repetição some do código. Quatro peças em vez de seis, e agora a espera existe num lugar só.',
+            render: () => pilha('VERSÃO 2', BANDEIRA
+                + bloco('controle', '↻ repita ' + arg(3) + ' vezes')
+                + TOCAR + espera(2)) + conta(4, 'a espera agora é 1 lugar só')
+        },
+        {
+            cap: 'Versão 3. O par vira um bloco próprio, criado por você, chamado miar. Repara que a definição foi para o canto: "fora de vista, fora da cabeça". Isso é abstração.',
+            render: () => pilha('VERSÃO 3', BANDEIRA
+                + bloco('controle', '↻ repita ' + arg(3) + ' vezes')
+                + bloco('custom recuo', 'miar'))
+                + pilha('A DEFINIÇÃO, GUARDADA', bloco('custom', 'defina miar') + TOCAR + espera(2), true)
+        },
+        {
+            cap: 'Versão 4. O bloco passa a receber um número, que a aula chama de argumento. Agora o programa inteiro são duas peças, e todo o detalhe mora dentro do bloco que você inventou.',
+            render: () => pilha('VERSÃO 4', BANDEIRA + bloco('custom', 'miar ' + arg('n = 3') + ' vezes'))
+                + pilha('A DEFINIÇÃO, GUARDADA', bloco('custom', 'defina miar ' + arg('n') + ' vezes')
+                    + bloco('controle recuo', '↻ repita ' + arg('n') + ' vezes')
+                    + TOCAR + espera(2), true)
+                + conta(2, 'programa principal')
+        }
+    ];
+
+    // ══════════ Widget 2: o palco ══════════
+    // Posicoes em coordenada Scratch (0,0 no centro); o palco tem 300x225.
+    function palco(gato, extras) {
+        const x = 150 + (gato.x || 0) * 0.6;
+        const y = 112 - (gato.y || 0) * 0.6;
+        return '<div class="scr-palco">'
+            + '<div class="scr-eixo h"></div><div class="scr-eixo v"></div>'
+            + '<div class="scr-origem">(0, 0)</div>'
+            + (extras || '')
+            + '<div class="scr-gato" style="left:' + (x - 17) + 'px;top:' + (y - 17) + 'px;">🐱</div>'
+            + (gato.fala ? '<div class="scr-balao" style="left:' + (x + 20) + 'px;top:' + (y - 34) + 'px;">' + gato.fala + '</div>' : '')
+            + '</div>';
+    }
+
+    const passosPalco = [
+        {
+            cap: 'O gato começa no centro, o ponto zero, zero. O palco inteiro é um plano de coordenadas.',
+            render: () => palco({ x: 0, y: 0 })
+                + pilha('', bloco('evento', '⚑ quando a bandeira verde for clicada')
+                    + bloco('movimento recuo', 'vá para x: ' + arg(0) + ' y: ' + arg(0)))
+        },
+        {
+            cap: 'O primeiro programa da aula: dois blocos, e o gato fala.',
+            render: () => palco({ x: 0, y: 0, fala: 'hello, world' })
+                + pilha('', bloco('evento', '⚑ quando a bandeira verde for clicada')
+                    + bloco('som recuo', '💬 diga ' + arg('hello, world')))
+        },
+        {
+            cap: 'O segundo é interativo. O bloco pergunte guarda o que você digitou numa variável chamada resposta, e o bloco junte gruda o "hello," com ela.',
+            render: () => palco({ x: 0, y: 0, fala: 'hello, David' })
+                + pilha('', bloco('evento', '⚑ quando a bandeira verde for clicada')
+                    + bloco('sensor recuo', '❓ pergunte ' + arg('qual é o seu nome?') + ' e espere')
+                    + bloco('som recuo', '💬 diga ' + arg('junte "hello," resposta')))
+        },
+        {
+            cap: 'Condicional dentro de um laço infinito: enquanto o programa roda, ele pergunta sem parar se o mouse está encostando no gato. Se estiver, mia.',
+            render: () => palco({ x: 0, y: 0, fala: '♪ miau' })
+                + pilha('', bloco('evento', '⚑ quando a bandeira verde for clicada')
+                    + bloco('controle', '∞ sempre')
+                    + bloco('sensor recuo', '◇ se tocando no ponteiro do mouse')
+                    + bloco('som recuo', '♪ toque o som ' + arg('miado') + ' até o fim'))
+        },
+        {
+            cap: 'No jogo do labirinto, o programa principal só chama duas funções próprias. Cada seta do teclado é uma condicional que muda x ou y em uma unidade.',
+            render: () => palco({ x: 60, y: 25 }, '<div class="scr-parede" style="left:0;top:0;bottom:0;width:8px;"></div>'
+                + '<div class="scr-parede" style="right:0;top:0;bottom:0;width:8px;"></div>')
+                + pilha('', bloco('evento', '⚑ quando a bandeira verde for clicada')
+                    + bloco('controle', '∞ sempre')
+                    + bloco('custom recuo', 'escutar o teclado')
+                    + bloco('custom recuo', 'sentir as paredes'))
+                + pilha('DENTRO DE ESCUTAR O TECLADO', bloco('custom', 'defina escutar o teclado')
+                    + bloco('sensor recuo', '◇ se tecla ' + arg('↑') + ' pressionada')
+                    + bloco('movimento recuo', 'mude y em ' + arg('+1')), true)
+        },
+        {
+            cap: 'E o fecho da aula: vários personagens rodam ao mesmo tempo, cada um com o próprio sempre, no mesmo palco. Isso tem nome, threads, e no Scratch aparece de graça.',
+            render: () => palco({ x: -70, y: 40 },
+                '<div class="scr-gato" style="left:200px;top:60px;">🎓</div>'
+                + '<div class="scr-gato" style="left:120px;top:150px;">🍎</div>')
+                + pilha('TRÊS SCRIPTS, AO MESMO TEMPO',
+                    bloco('evento', '⚑ gato: sempre escutar o teclado')
+                    + bloco('evento', '⚑ inimigo: sempre andar e virar na parede')
+                    + bloco('evento', '⚑ perseguidor: sempre apontar e andar'))
+        }
+    ];
+
+    // ══════════ Motor comum ══════════
+    const widgets = {
+        mia: { idx: 0, timer: null, passos: passosMiado, palco: 'miaStage', legenda: 'miaCaption' },
+        pal: { idx: 0, timer: null, passos: passosPalco, palco: 'palStage', legenda: 'palCaption' }
+    };
+
+    function mostra(prefixo, idx) {
+        const w = widgets[prefixo];
+        const stage = document.getElementById(w.palco);
+        const caption = document.getElementById(w.legenda);
+        if (!stage || !caption) return;
+        w.idx = idx;
+        stage.innerHTML = w.passos[idx].render();
+        caption.innerHTML = '<span class="scr-passo">' + (idx + 1) + '/' + w.passos.length + '</span>' + w.passos[idx].cap;
+        document.getElementById(prefixo + 'Prev').disabled = idx === 0;
+        document.getElementById(prefixo + 'Next').disabled = idx === w.passos.length - 1;
+    }
+
+    function paraAuto(prefixo) {
+        const w = widgets[prefixo];
+        if (w.timer) { clearTimeout(w.timer); w.timer = null; }
+        const botao = document.getElementById(prefixo + 'Play');
+        if (botao) botao.textContent = '▶ Seguir';
+    }
+
+    function agendaAuto(prefixo) {
+        const w = widgets[prefixo];
+        w.timer = setTimeout(() => {
+            if (w.idx < w.passos.length - 1) { mostra(prefixo, w.idx + 1); agendaAuto(prefixo); }
+            else paraAuto(prefixo);
+        }, 5600);
+    }
+
+    document.addEventListener('click', (e) => {
+        const botao = e.target.closest('button');
+        if (!botao || !botao.id) return;
+        const prefixo = botao.id.slice(0, 3);
+        const w = widgets[prefixo];
+        if (!w) return;
+        const acao = botao.id.slice(3);
+
+        if (acao === 'Play') {
+            if (w.timer) { paraAuto(prefixo); return; }
+            botao.textContent = '⏸ Pausar';
+            if (w.idx === w.passos.length - 1) mostra(prefixo, 0);
+            agendaAuto(prefixo);
+        } else if (acao === 'Next') { paraAuto(prefixo); mostra(prefixo, w.idx + 1); }
+        else if (acao === 'Prev') { paraAuto(prefixo); mostra(prefixo, w.idx - 1); }
+        else if (acao === 'Reset') { paraAuto(prefixo); mostra(prefixo, 0); }
+    });
+
+    // O layout.js reescreve o body; só desenhar quando os palcos existirem.
+    function iniciar() {
+        if (document.getElementById('miaCaption') && document.getElementById('palCaption')) {
+            mostra('mia', 0);
+            mostra('pal', 0);
+        } else {
+            setTimeout(iniciar, 60);
+        }
+    }
+    iniciar();
+})();
+</script>
+
+</body>
+</html>

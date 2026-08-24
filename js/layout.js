@@ -31,10 +31,24 @@ var MENU = [
             { label: 'HTML-CSS-JS',  href: '4-html-css-js/html-css-js.html', pasta: '4-html-css-js' },
             { label: 'HARDWARE',     href: '5-hardware/hardware.html',       pasta: '5-hardware' },
             { label: 'GIT',          href: '6-git/git.html',                 pasta: '6-git' },
-            { label: 'ALGORITMOS',   href: '10-algoritmos/algoritmos.html',  pasta: '10-algoritmos' }
+            { label: 'ALGORITMOS',   href: '10-algoritmos/algoritmos.html',  pasta: '10-algoritmos' },
+            { label: 'CS50',         href: '11-cs50/cs50.html',              pasta: '11-cs50' }
         ],
-        subpastas: ['1-java', '2-sql', '3-modelo-rede', '4-html-css-js', '5-hardware', '6-git', '10-algoritmos'],
+        subpastas: ['1-java', '2-sql', '3-modelo-rede', '4-html-css-js', '5-hardware', '6-git', '10-algoritmos', '11-cs50'],
         pasta: '1-fundamentos'
+    },
+    {
+        grupo: 'CS50',
+        pagina: 'cs50.html',
+        parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
+        hidden: true,
+        items: [
+            { label: '1 - Tudo Vira Número', arquivo: '1-tudo-vira-numero/1-tudo-vira-numero.html', tipo: 'check' },
+            { label: '2 - Algoritmo e Pseudocódigo', arquivo: '2-algoritmo-e-pseudocodigo/2-algoritmo-e-pseudocodigo.html', tipo: 'check' },
+            { label: '3 - Scratch na Prática', arquivo: '3-scratch-na-pratica/3-scratch-na-pratica.html', tipo: 'check' }
+        ],
+        pasta: '11-cs50',
+        basePath: '1-fundamentos/11-cs50'
     },
     {
         grupo: 'JAVA',

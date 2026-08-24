@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algoritmo e Pseudocódigo — CS50 — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+    <style>
+        /* Prefixo alg- pra não esbarrar no CSS global da doc. */
+        .alg-anim {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+        .alg-toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .alg-btn {
+            background: #2563eb; color: #fff; border: none;
+            padding: 8px 16px; border-radius: 6px; cursor: pointer;
+            font: inherit; font-size: 14px; font-weight: 500;
+        }
+        .alg-btn:hover { background: #1d4ed8; }
+        .alg-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+        .alg-btn.prev { background: #6366f1; }
+        .alg-btn.next { background: #10b981; }
+        .alg-btn.secondary { background: #6b7280; }
+
+        .alg-stage { min-height: 250px; display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 8px 0 16px; }
+
+        /* ─── Corrida das três buscas ─── */
+        .alg-corrida { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 14px; }
+        .alg-pista { display: grid; grid-template-columns: 132px 1fr 92px; align-items: center; gap: 10px; }
+        .alg-nome { font-size: 13px; font-weight: 600; color: #374151; }
+        .alg-nome small { display: block; font-weight: 400; color: #6b7280; font-size: 11px; }
+        .alg-barra {
+            position: relative; height: 26px; background: #f3f4f6;
+            border: 1px solid #e5e7eb; border-radius: 5px; overflow: hidden;
+        }
+        .alg-faixa { position: absolute; top: 0; bottom: 0; background: #dbeafe; transition: left .05s linear, width .05s linear; }
+        .alg-alvo { position: absolute; top: 0; bottom: 0; width: 3px; background: #ef4444; }
+        .alg-agulha { position: absolute; top: 0; bottom: 0; width: 3px; background: #f59e0b; transition: left .05s linear; }
+        .alg-conta { font: 700 17px ui-monospace, Consolas, monospace; color: #6b7280; text-align: right; }
+        .alg-pista.achou .alg-conta { color: #059669; }
+        .alg-pista.achou .alg-barra { border-color: #10b981; }
+
+        /* ─── Curvas do Big-O ─── */
+        .alg-curvas { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; }
+        .alg-curva { text-align: center; }
+        .alg-curva svg { background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; }
+        .alg-curva .alg-rot { font: 700 13px ui-monospace, Consolas, monospace; color: #374151; margin-top: 6px; }
+
+        /* ─── Cartões ─── */
+        .alg-cards { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+        .alg-card {
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+            padding: 12px 18px; text-align: center; min-width: 140px; animation: algIn .35s both;
+        }
+        .alg-card .alg-rot2 { font-size: 12px; font-weight: 700; color: #6b7280; letter-spacing: 1px; }
+        .alg-card .alg-val { font: 700 22px ui-monospace, Consolas, monospace; color: #1f2937; margin-top: 4px; }
+        @keyframes algIn { from { opacity: 0; transform: scale(.8); } to { opacity: 1; transform: scale(1); } }
+
+        /* ─── Debugger do pseudocódigo ─── */
+        .alg-debug {
+            background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px;
+            overflow: hidden; font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+            font-size: 13px; line-height: 1.75; color: #1f2937; padding: 12px 0; margin-bottom: 14px;
+        }
+        .alg-linha { padding: 1px 16px 1px 44px; position: relative; white-space: pre; transition: background .2s ease, color .25s ease; }
+        .alg-linha .alg-n { position: absolute; left: 14px; color: #9ca3af; font-size: 11px; }
+        .alg-linha.active { background: #fef3c7; }
+        .alg-linha.active::before { content: '▶'; position: absolute; left: 30px; color: #d97706; font-size: 10px; }
+        .alg-linha.done { color: #9ca3af; }
+        .alg-linha .alg-kw { color: #7c3aed; font-weight: 600; }
+        .alg-linha.done .alg-kw { color: #c7c9cd; }
+        .alg-linha.papel { background: #eef2ff; }
+
+        .alg-marca { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .alg-tag {
+            font: 700 12px system-ui, sans-serif; letter-spacing: .5px;
+            border-radius: 5px; padding: 5px 12px; animation: algIn .3s both;
+        }
+        .alg-tag.f { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .alg-tag.c { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }
+        .alg-tag.b { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+        .alg-tag.l { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
+
+        .alg-caption {
+            background: #111827; color: #d1d5db; border-radius: 6px;
+            padding: 12px 16px; font-size: 15px; line-height: 1.5; min-height: 46px;
+        }
+        .alg-caption .alg-passo { color: #9ca3af; font-size: 12px; margin-right: 8px; }
+        .alg-off { display: none !important; }
+    </style>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Algoritmo e Pseudocódigo</h1>
+
+<div class="audio-player" data-src="audio/algoritmo-e-pseudocodigo.mp3">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>A parte anterior resolveu como o computador <strong>guarda</strong>. Esta resolve como ele <strong>acha</strong>. O exemplo da aula é uma lista telefônica de mil páginas, e a diferença entre três jeitos de procurar um nome nela. Dessa comparação sai a ideia de eficiência, e do passo a passo escrito em português saem os quatro blocos básicos de qualquer linguagem de programação.</p>
+
+<h3>A corrida das três buscas</h3>
+
+<p>As três estratégias procuram a mesma página, ao mesmo tempo, com o mesmo relógio. O contador conta quantas páginas cada uma precisou olhar.</p>
+
+<div class="alg-anim">
+    <div class="alg-toolbar">
+        <button class="alg-btn" id="algPlay">▶ Seguir</button>
+        <button class="alg-btn prev" id="algPrev" disabled>◄ Anterior</button>
+        <button class="alg-btn next" id="algNext">→ Próximo</button>
+        <button class="alg-btn secondary" id="algReset">↻ Reiniciar</button>
+    </div>
+
+    <div class="alg-stage">
+        <div class="alg-corrida alg-off" id="algCorrida"></div>
+        <div class="alg-curvas alg-off" id="algCurvas"></div>
+        <div class="alg-cards alg-off" id="algCards"></div>
+    </div>
+
+    <div class="alg-caption" id="algCaption"></div>
+</div>
+
+<h3>O pseudocódigo, linha a linha</h3>
+
+<p>O mesmo terceiro algoritmo, escrito em português como instruções que uma pessoa consegue seguir. No fim, os pedaços dele ganham nome.</p>
+
+<div class="alg-anim">
+    <div class="alg-toolbar">
+        <button class="alg-btn" id="psePlay">▶ Seguir</button>
+        <button class="alg-btn prev" id="psePrev" disabled>◄ Anterior</button>
+        <button class="alg-btn next" id="pseNext">→ Próximo</button>
+        <button class="alg-btn secondary" id="pseReset">↻ Reiniciar</button>
+    </div>
+
+    <div class="alg-debug" id="pseDebug">
+<div class="alg-linha" data-n="1"><span class="alg-n">1</span>Pegar a lista telefonica</div>
+<div class="alg-linha" data-n="2"><span class="alg-n">2</span>Abrir no meio da lista</div>
+<div class="alg-linha" data-n="3"><span class="alg-n">3</span>Olhar a pagina</div>
+<div class="alg-linha" data-n="4"><span class="alg-n">4</span><span class="alg-kw">Se</span> a pessoa esta na pagina</div>
+<div class="alg-linha" data-n="5"><span class="alg-n">5</span>    Ligar para a pessoa</div>
+<div class="alg-linha" data-n="6"><span class="alg-n">6</span><span class="alg-kw">Senao se</span> a pessoa esta antes no livro</div>
+<div class="alg-linha" data-n="7"><span class="alg-n">7</span>    Abrir no meio da metade da esquerda</div>
+<div class="alg-linha" data-n="8"><span class="alg-n">8</span>    <span class="alg-kw">Voltar para a linha 3</span></div>
+<div class="alg-linha" data-n="9"><span class="alg-n">9</span><span class="alg-kw">Senao se</span> a pessoa esta depois no livro</div>
+<div class="alg-linha" data-n="10"><span class="alg-n">10</span>    Abrir no meio da metade da direita</div>
+<div class="alg-linha" data-n="11"><span class="alg-n">11</span>    <span class="alg-kw">Voltar para a linha 3</span></div>
+<div class="alg-linha" data-n="12"><span class="alg-n">12</span><span class="alg-kw">Senao</span></div>
+<div class="alg-linha" data-n="13"><span class="alg-n">13</span>    Desistir</div>
+    </div>
+
+    <div class="alg-stage" style="min-height:90px;">
+        <div class="alg-marca alg-off" id="pseMarca"></div>
+    </div>
+
+    <div class="alg-caption" id="pseCaption"></div>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que é um algoritmo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Algoritmo é um conjunto de instruções, passo a passo, para resolver um problema. Nada além disso.</p>
+            <p>A aula define código a partir daí, e vale guardar a frase: <strong>código é a implementação de um algoritmo numa linguagem que o computador entende</strong>. Primeiro vem a lógica, depois a escrita.</p>
+            <p>E ela lembra que a parte anterior já resolveu a metade que faltava: representar nomes e números. O ASCII e o Unicode dão conta dos nomes, e número já era o ponto de partida. Então programar vira receber uma representação padronizada de entrada e devolver resposta.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">As três buscas, e o bug da segunda</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A lista telefônica da aula tem mil páginas. As três estratégias:</p>
+            <ol>
+                <li><strong>Uma página por vez</strong>, do começo ao fim. Funciona sempre. No pior caso, mil viradas.</li>
+                <li><strong>Duas páginas por vez</strong>. Duas vezes mais rápido.</li>
+                <li><strong>Abrir no meio</strong>, ver se o nome está antes ou depois, e repetir só na metade que interessa.</li>
+            </ol>
+
+            <p>⚠️ A segunda tem um defeito que a aula faz questão de expor: pulando de duas em duas, com mais ou menos 50% de chance a pessoa fica <strong>entre</strong> duas páginas e você passa direto por ela. O conserto é simples, voltar uma página ao perceber que passou. Mas repare no que aconteceu: um algoritmo mais rápido introduziu um caso de erro que o mais lento não tinha. Sem esse conserto, é rápido e <strong>errado</strong>.</p>
+
+            <p>A terceira é a que o seu telefone faz quando você digita no campo de busca de contatos. E é por isso que ele mantém tudo em ordem alfabética: sem ordem, não dá pra saber se o que você procura está antes ou depois.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Big-O — o que acontece quando o problema dobra</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Pra comparar velocidade sem depender de máquina, a aula usa a notação Big-O, que descreve como o custo cresce em função do tamanho do problema (o <code>n</code>).</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Estratégia</th><th>Big-O</th><th>1.000 páginas</th><th>Se dobrar pra 2.000</th></tr>
+                    <tr><td>Uma por vez</td><td>O(n)</td><td>até 1.000 viradas</td><td>o dobro</td></tr>
+                    <tr><td>Duas por vez</td><td>O(n/2)</td><td>até 500 viradas</td><td>o dobro</td></tr>
+                    <tr><td>Dividir no meio</td><td>O(log₂ n)</td><td>cerca de 10</td><td><strong>mais 1</strong></td></tr>
+                </table>
+            </div>
+
+            <p>O exemplo que a aula usa pra essa última linha é duas cidades vizinhas juntando as listas telefônicas: de mil páginas vai pra duas mil da noite pro dia. As duas primeiras estratégias passam a demorar o dobro. A terceira precisa de <strong>uma</strong> divisão a mais. Só uma.</p>
+
+            <p>A curva logarítmica sobe, mas sobe muito devagar. Ela nunca fica horizontal de verdade, só quase.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Pseudocódigo e os quatro blocos básicos</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Pseudocódigo é escrever os passos em linguagem humana, sem sintaxe de linguagem nenhuma. A aula avisa que <strong>não existe um formato oficial</strong>: cada pessoa escreve do seu jeito, desde que fique preciso.</p>
+
+            <p>E aí vem o movimento mais importante da aula inteira. Ela volta naquelas treze linhas em português e aponta que os blocos básicos de programação já estão todos ali dentro:</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>No pseudocódigo</th><th>Nome</th><th>O que é</th></tr>
+                    <tr><td>pegar, abrir, olhar, ligar</td><td><strong>Funções</strong></td><td>verbos, ações que fazem um pedaço do trabalho</td></tr>
+                    <tr><td>Se, Senão se, Senão</td><td><strong>Condicionais</strong></td><td>a bifurcação: vai por um caminho ou por outro</td></tr>
+                    <tr><td>"a pessoa está na página"</td><td><strong>Expressões booleanas</strong></td><td>perguntas que só podem ser verdadeiras ou falsas</td></tr>
+                    <tr><td>"Voltar para a linha 3"</td><td><strong>Loops</strong></td><td>repetir</td></tr>
+                </table>
+            </div>
+
+            <p>Ou seja: os fundamentos da programação já aparecem em qualquer receita bem escrita, antes de existir código.</p>
+
+            <p>Sobre o "voltar para a linha 3": parece que isso repetiria pra sempre, mas não repete. A cada volta o problema fica menor, porque metade foi descartada. Cedo ou tarde ele chega numa página só, e acaba.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A linha 13, e por que seu computador trava</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>As linhas 12 e 13 do pseudocódigo tratam o caso que quase ninguém lembra: <strong>e se a pessoa não estiver na lista?</strong> Sem esse tratamento, o algoritmo não sabe o que fazer quando acaba a busca sem achar nada.</p>
+
+            <p>A aula amarra isso numa coisa do dia a dia. Quando o computador ou o telefone trava, fica rodando a bolinha, reinicia sozinho ou faz algo sem sentido, muitas vezes é exatamente isso: alguém, em alguma empresa, não previu um caso incomum mas possível. Sem instrução pro caso, a máquina faz algo indefinido.</p>
+
+            <p>Fica a lição prática: um algoritmo também precisa saber <strong>terminar</strong> quando não há resposta.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Abstração, e o que vem depois</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A aula fecha essa parte apontando o caminho do curso: Scratch agora, depois a linguagem C, e depois outras como Python. O programa de exemplo em C é o clássico:</p>
+<pre><code class="language-c">#include &lt;stdio.h&gt;
+
+int main(void)
+{
+    printf("hello, world\n");
+}</code></pre>
+
+            <p>E justifica essa ordem com <strong>abstração</strong>: programadores constroem em cima do trabalho de outros. A humanidade saiu dos zeros e uns e foi criando linguagens cada vez mais acessíveis, cada uma escondendo a complexidade da anterior. A frase que a aula usa é a de <strong>subir nos ombros de gigantes</strong>.</p>
+
+            <p>Na prática é isso que permite escrever <code>printf</code> sem saber como o caractere chega no monitor.</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Event delegation no document — sobrevive ao rewrite de innerHTML do layout.js.
+(function () {
+    'use strict';
+
+    // ══════════ Widget 1: a corrida das três buscas ══════════
+    const PAGINAS = 1000;
+    const ALVO = 137;
+
+    // Cada estrategia devolve a proxima pagina a olhar, dado o estado dela.
+    // A terceira mantem um intervalo [lo, hi] e sempre olha o meio.
+    function criaCorredores() {
+        return [
+            {
+                nome: 'Uma por vez', dica: 'O(n)', pagina: 0, passos: 0, achou: false,
+                lo: 1, hi: PAGINAS,
+                anda() { this.pagina += 1; this.passos++; if (this.pagina >= ALVO) this.achou = true; }
+            },
+            {
+                nome: 'Duas por vez', dica: 'O(n/2)', pagina: 0, passos: 0, achou: false,
+                lo: 1, hi: PAGINAS,
+                anda() {
+                    this.pagina += 2; this.passos++;
+                    // Passou do alvo sem cair em cima: volta uma pagina (o conserto da aula).
+                    if (this.pagina >= ALVO) { if (this.pagina > ALVO) this.passos++; this.pagina = ALVO; this.achou = true; }
+                }
+            },
+            {
+                nome: 'Dividir no meio', dica: 'O(log₂ n)', pagina: 0, passos: 0, achou: false,
+                lo: 1, hi: PAGINAS,
+                anda() {
+                    const meio = Math.floor((this.lo + this.hi) / 2);
+                    this.pagina = meio; this.passos++;
+                    if (meio === ALVO) { this.achou = true; return; }
+                    if (ALVO < meio) this.hi = meio - 1; else this.lo = meio + 1;
+                }
+            }
+        ];
+    }
+
+    let corredores = criaCorredores();
+    let timerCorrida = null;
+
+    function desenhaCorrida() {
+        const alvo = document.getElementById('algCorrida');
+        if (!alvo) return;
+        alvo.innerHTML = corredores.map((c) => {
+            const largura = ((c.hi - c.lo + 1) / PAGINAS) * 100;
+            const inicio = ((c.lo - 1) / PAGINAS) * 100;
+            return '<div class="alg-pista' + (c.achou ? ' achou' : '') + '">'
+                + '<div class="alg-nome">' + c.nome + '<small>' + c.dica + '</small></div>'
+                + '<div class="alg-barra">'
+                +   '<div class="alg-faixa" style="left:' + inicio + '%;width:' + largura + '%;"></div>'
+                +   '<div class="alg-alvo" style="left:' + ((ALVO / PAGINAS) * 100) + '%;"></div>'
+                +   '<div class="alg-agulha" style="left:' + ((c.pagina / PAGINAS) * 100) + '%;"></div>'
+                + '</div>'
+                + '<div class="alg-conta">' + c.passos + (c.achou ? ' ✓' : '') + '</div>'
+                + '</div>';
+        }).join('');
+        alvo.classList.remove('alg-off');
+    }
+
+    function paraCorrida() {
+        if (timerCorrida) { clearInterval(timerCorrida); timerCorrida = null; }
+    }
+
+    function rodaCorrida() {
+        paraCorrida();
+        corredores = criaCorredores();
+        desenhaCorrida();
+        timerCorrida = setInterval(() => {
+            let vivos = 0;
+            corredores.forEach((c) => { if (!c.achou) { c.anda(); vivos++; } });
+            desenhaCorrida();
+            if (!vivos) paraCorrida();
+        }, 14);
+    }
+
+    function desenhaCurvas() {
+        const alvo = document.getElementById('algCurvas');
+        if (!alvo) return;
+        const curvas = [
+            { rot: 'O(n)', cor: '#ef4444', f: (x) => x },
+            { rot: 'O(n/2)', cor: '#f59e0b', f: (x) => x / 2 },
+            { rot: 'O(log₂ n)', cor: '#10b981', f: (x) => Math.log2(x * 99 + 1) / Math.log2(100) }
+        ];
+        alvo.innerHTML = curvas.map((c) => {
+            let d = '';
+            for (let i = 0; i <= 40; i++) {
+                const x = i / 40;
+                const y = Math.min(1, c.f(x));
+                d += (i ? ' L' : 'M') + (8 + x * 104) + ' ' + (88 - y * 76);
+            }
+            return '<div class="alg-curva">'
+                + '<svg width="120" height="96">'
+                +   '<line x1="8" y1="88" x2="116" y2="88" stroke="#d1d5db"/>'
+                +   '<line x1="8" y1="8" x2="8" y2="88" stroke="#d1d5db"/>'
+                +   '<path d="' + d + '" fill="none" stroke="' + c.cor + '" stroke-width="2.5"/>'
+                + '</svg>'
+                + '<div class="alg-rot">' + c.rot + '</div>'
+                + '</div>';
+        }).join('');
+        alvo.classList.remove('alg-off');
+    }
+
+    function desenhaCards(itens) {
+        const alvo = document.getElementById('algCards');
+        if (!alvo) return;
+        alvo.innerHTML = itens.map((it, i) =>
+            '<div class="alg-card" style="animation-delay:' + (i * 0.15) + 's">'
+            + '<div class="alg-rot2">' + it.rot + '</div>'
+            + '<div class="alg-val">' + it.val + '</div></div>'
+        ).join('');
+        alvo.classList.remove('alg-off');
+    }
+
+    const passosCorrida = [
+        {
+            cap: 'Uma lista telefônica de mil páginas. A marca vermelha é a página onde o nome está. Nenhuma das três sabe onde ela fica.',
+            render() { corredores = criaCorredores(); desenhaCorrida(); }
+        },
+        {
+            dur: 9000,
+            cap: 'As três correm juntas, no mesmo relógio. Repara em quem termina primeiro e no número de páginas que cada uma olhou.',
+            render() { rodaCorrida(); }
+        },
+        {
+            cap: 'A terceira ganha porque joga metade do problema fora a cada olhada. As outras duas caminham; ela pula.',
+            render() {
+                corredores = criaCorredores();
+                let voltas = 0;
+                while (!corredores[2].achou && voltas < 40) { corredores.forEach((c) => c.anda()); voltas++; }
+                desenhaCorrida();
+            }
+        },
+        {
+            cap: 'É por isso que a comparação não se faz em segundos, e sim pelo formato da curva. A verde é a que aguenta problema grande.',
+            render() { desenhaCurvas(); }
+        },
+        {
+            cap: 'E a prova final: se duas cidades juntarem as listas, de mil páginas vai pra duas mil. As duas primeiras demoram o DOBRO. A terceira precisa de uma divisão a mais. Uma.',
+            render() {
+                desenhaCurvas();
+                desenhaCards([
+                    { rot: 'UMA POR VEZ', val: '2×' },
+                    { rot: 'DUAS POR VEZ', val: '2×' },
+                    { rot: 'DIVIDIR NO MEIO', val: '+1 passo' }
+                ]);
+            }
+        }
+    ];
+
+    // ══════════ Widget 2: o debugger do pseudocódigo ══════════
+    // Trace real da busca por uma pagina que fica ANTES do meio, entao o
+    // caminho passa pela linha 6 (senao se, antes) e volta pra linha 3.
+    const passosPseudo = [
+        { linhas: [1], cap: 'Linha 1: pegar a lista. É um verbo, uma ação.' },
+        { linhas: [2], cap: 'Linha 2: abrir no meio. Outro verbo.' },
+        { linhas: [3], cap: 'Linha 3: olhar a página. Guarde esse número, a gente volta aqui.' },
+        { linhas: [4], cap: 'Linha 4: a primeira pergunta. A pessoa está nesta página? Só cabe sim ou não.' },
+        { linhas: [6], cap: 'Não estava. Linha 6: então ela está antes no livro? Sim, está.' },
+        { linhas: [7], cap: 'Linha 7: abrir no meio da metade da esquerda. Metade do problema acabou de ser jogada fora.' },
+        { linhas: [8], cap: 'Linha 8: voltar para a linha 3. Aqui nasce a repetição.' },
+        { linhas: [3, 4, 6, 7, 8], cap: 'E roda de novo, com o livro pela metade. Parece que repetiria pra sempre, mas a cada volta o problema encolhe, então cedo ou tarde sobra uma página só.' },
+        { linhas: [5], cap: 'Quando a pessoa finalmente está na página, a linha 5 executa: ligar. Fim.' },
+        { linhas: [12, 13], cap: 'E se ela não estiver na lista? As linhas 12 e 13 tratam isso: desistir. Sem elas, a máquina não sabe o que fazer e faz algo indefinido. É daí que vem boa parte das travadas de computador e celular.' },
+        {
+            linhas: [], marca: 'f',
+            cap: 'Agora os nomes. Todo verbo dali (pegar, abrir, olhar, ligar) é uma FUNÇÃO.'
+        },
+        {
+            linhas: [4, 6, 9, 12], marca: 'c',
+            cap: 'Todo Se e Senão são CONDICIONAIS: a bifurcação, vai por um caminho ou por outro.'
+        },
+        {
+            linhas: [4, 6, 9], marca: 'b',
+            cap: 'As perguntas que só podem ser verdadeiras ou falsas são EXPRESSÕES BOOLEANAS.'
+        },
+        {
+            linhas: [8, 11], marca: 'l',
+            cap: 'E o "voltar para a linha 3" é um LOOP. Pronto: os quatro blocos básicos de programação estavam todos escondidos num texto em português.'
+        }
+    ];
+
+    const ROTULOS = {
+        f: [['f', 'FUNÇÕES']],
+        c: [['f', 'FUNÇÕES'], ['c', 'CONDICIONAIS']],
+        b: [['f', 'FUNÇÕES'], ['c', 'CONDICIONAIS'], ['b', 'BOOLEANAS']],
+        l: [['f', 'FUNÇÕES'], ['c', 'CONDICIONAIS'], ['b', 'BOOLEANAS'], ['l', 'LOOPS']]
+    };
+
+    function mostraPseudo(idx) {
+        const debug = document.getElementById('pseDebug');
+        const marca = document.getElementById('pseMarca');
+        const caption = document.getElementById('pseCaption');
+        if (!debug || !caption) return;
+
+        const passo = passosPseudo[idx];
+        debug.querySelectorAll('.alg-linha').forEach((el) => {
+            el.classList.remove('active', 'done', 'papel');
+            const n = Number(el.dataset.n);
+            if (passo.linhas.includes(n)) el.classList.add(passo.linhas.length > 1 ? 'papel' : 'active');
+        });
+
+        if (passo.marca) {
+            marca.innerHTML = ROTULOS[passo.marca]
+                .map(([cls, txt], i) => '<span class="alg-tag ' + cls + '" style="animation-delay:' + (i * 0.1) + 's">' + txt + '</span>')
+                .join('');
+            marca.classList.remove('alg-off');
+        } else {
+            marca.classList.add('alg-off');
+        }
+
+        caption.innerHTML = '<span class="alg-passo">' + (idx + 1) + '/' + passosPseudo.length + '</span>' + passo.cap;
+        document.getElementById('psePrev').disabled = idx === 0;
+        document.getElementById('pseNext').disabled = idx === passosPseudo.length - 1;
+    }
+
+    // ══════════ Motor comum dos dois widgets ══════════
+    const widgets = {
+        alg: { idx: 0, timer: null, passos: passosCorrida, prefixo: 'alg' },
+        pse: { idx: 0, timer: null, passos: passosPseudo, prefixo: 'pse' }
+    };
+
+    function mostraCorrida(idx) {
+        const caption = document.getElementById('algCaption');
+        if (!caption) return;
+        paraCorrida();
+        ['algCorrida', 'algCurvas', 'algCards'].forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('alg-off');
+        });
+        passosCorrida[idx].render();
+        caption.innerHTML = '<span class="alg-passo">' + (idx + 1) + '/' + passosCorrida.length + '</span>' + passosCorrida[idx].cap;
+        document.getElementById('algPrev').disabled = idx === 0;
+        document.getElementById('algNext').disabled = idx === passosCorrida.length - 1;
+    }
+
+    const desenhistas = { alg: mostraCorrida, pse: mostraPseudo };
+
+    function paraAuto(w) {
+        if (w.timer) { clearTimeout(w.timer); w.timer = null; }
+        const botao = document.getElementById(w.prefixo + 'Play');
+        if (botao) botao.textContent = '▶ Seguir';
+    }
+
+    function agendaAuto(w) {
+        w.timer = setTimeout(() => {
+            if (w.idx < w.passos.length - 1) { w.idx++; desenhistas[w.prefixo](w.idx); agendaAuto(w); }
+            else paraAuto(w);
+        }, w.passos[w.idx].dur || 5200);
+    }
+
+    document.addEventListener('click', (e) => {
+        const botao = e.target.closest('button');
+        if (!botao || !botao.id) return;
+        const prefixo = botao.id.slice(0, 3);
+        const w = widgets[prefixo];
+        if (!w) return;
+        const acao = botao.id.slice(3);
+
+        if (acao === 'Play') {
+            if (w.timer) { paraAuto(w); return; }
+            botao.textContent = '⏸ Pausar';
+            if (w.idx === w.passos.length - 1) w.idx = 0;
+            desenhistas[prefixo](w.idx);
+            agendaAuto(w);
+        } else if (acao === 'Next') { paraAuto(w); w.idx++; desenhistas[prefixo](w.idx); }
+        else if (acao === 'Prev') { paraAuto(w); w.idx--; desenhistas[prefixo](w.idx); }
+        else if (acao === 'Reset') { paraAuto(w); w.idx = 0; desenhistas[prefixo](w.idx); }
+    });
+
+    // O layout.js reescreve o body; só desenhar quando os palcos existirem.
+    function iniciar() {
+        if (document.getElementById('algCaption') && document.getElementById('pseCaption')) {
+            mostraCorrida(0);
+            mostraPseudo(0);
+        } else {
+            setTimeout(iniciar, 60);
+        }
+    }
+    iniciar();
+})();
+</script>
+
+</body>
+</html>

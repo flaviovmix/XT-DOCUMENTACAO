@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servidor Local — Réplica da Stack — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Réplica da Stack</h1>
+
+<div class="audio-player" data-src="audio/replica-da-stack.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>A miniatura da arquitetura do servidor real, montada dentro da VM: uma <strong>rede interna</strong> do Docker, um container <strong>nginx por site</strong> (sem porta pra rua) e o <strong>Caddy na frente</strong> como única entrada. No fim, dois sites respondendo no navegador do Windows e os dois gestos do dia a dia treinados: trocar conteúdo e adicionar site novo com reload a quente.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A rede interna — containers que se chamam pelo nome</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Uma rede do Docker é um espaço onde os containers se enxergam <strong>pelo nome</strong>. Dentro da rede <code>web</code>, o Caddy chama o container <code>meusite</code> pelo nome, sem IP nenhum. É a mesma rede, com o mesmo nome, que existe no servidor remoto:</p>
+            <pre><code class="language-bash">docker network create web</code></pre>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O primeiro site — nginx com volume espelho</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Primeiro o conteúdo (uma pasta com um <code>index.html</code>), depois o container que serve essa pasta:</p>
+            <pre><code class="language-bash">mkdir -p ~/meusite
+echo '&lt;h1&gt;Funciona! site local&lt;/h1&gt;' &gt; ~/meusite/index.html
+
+docker run -d --name meusite --network web --restart unless-stopped \
+  -v ~/meusite:/usr/share/nginx/html:ro nginx:alpine</code></pre>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Flag</th><th>O que faz</th></tr>
+                    <tr><td><code>-d</code></td><td>Roda em segundo plano</td></tr>
+                    <tr><td><code>--name meusite</code></td><td>O nome que a rede vai conhecer</td></tr>
+                    <tr><td><code>--network web</code></td><td>Põe o container na rede interna</td></tr>
+                    <tr><td><code>--restart unless-stopped</code></td><td>Religa sozinho se a VM reiniciar</td></tr>
+                    <tr><td><code>-v pasta:/usr/share/nginx/html:ro</code></td><td>Espelha a pasta da VM dentro do container (só leitura)</td></tr>
+                </table>
+            </div>
+            <p>Detalhe importante: <strong>não tem <code>-p</code></strong> nesse comando. O site não tem porta pra rua, ele só existe dentro da rede <code>web</code>. E o <code>--restart unless-stopped</code> já se pagou: quando a VM reiniciou depois do travamento, o container voltou sozinho.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O Caddy na frente — porteiro único na porta 80</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O Caddy é o porteiro: o único container com porta aberta pra fora. A configuração é o <code>Caddyfile</code>, um bloco por site: "quem chegar pedindo <code>meusite.local</code>, encaminha pro container <code>meusite</code> na porta 80".</p>
+            <pre><code class="language-bash">mkdir -p ~/caddy
+cat &gt; ~/caddy/Caddyfile &lt;&lt; 'EOF'
+http://meusite.local {
+    reverse_proxy meusite:80
+}
+EOF
+
+docker run -d --name caddy --network web --restart unless-stopped \
+  -p 80:80 \
+  -v ~/caddy/Caddyfile:/etc/caddy/Caddyfile:ro \
+  caddy:latest</code></pre>
+            <p>A novidade é o <code>-p 80:80</code>: abre a porta 80 da VM e entrega pro Caddy. Ele é o único de cara pra rua; os nginx dos sites ficam escondidos atrás, alcançáveis só por dentro da rede.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Ensinar o Windows — o arquivo hosts</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p><code>meusite.local</code> não existe na internet. Antes de perguntar pro DNS, o navegador consulta a "agenda de contatos" local do Windows: o arquivo <code>hosts</code>. Num PowerShell <strong>como administrador</strong>:</p>
+            <pre><code class="language-bash">Add-Content C:\Windows\System32\drivers\etc\hosts "192.168.56.101  meusite.local"</code></pre>
+            <p>Abrindo <code>http://meusite.local</code> no navegador: <strong>"Funciona! site local"</strong>. O aviso de "não seguro" é normal e esperado: ambiente local não tem certificado. HTTPS com cadeado é assunto do servidor real, onde o Caddy consegue certificado sozinho.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Gesto 1 — trocar o conteúdo (sem restart)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O gesto de atualizar um site que já está no ar:</p>
+            <pre><code class="language-bash">echo '&lt;h1&gt;mudei o conteudo&lt;/h1&gt;' &gt; ~/meusite/index.html
+# recarrega o navegador: mudou</code></pre>
+            <p>Sem restart, sem reload, sem rebuild. O volume é um espelho: o container não guarda cópia dos arquivos, ele enxerga a pasta da VM em tempo real.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Gesto 2 — adicionar um site novo (reload a quente)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O padrão do servidor: cada site novo = um container nginx novo + um bloco novo no Caddyfile.</p>
+            <pre><code class="language-bash">mkdir -p ~/site2
+echo '&lt;h1&gt;site 2&lt;/h1&gt;' &gt; ~/site2/index.html
+
+docker run -d --name site2 --network web --restart unless-stopped \
+  -v ~/site2:/usr/share/nginx/html:ro nginx:alpine
+
+cat &gt;&gt; ~/caddy/Caddyfile &lt;&lt; 'EOF'
+
+http://site2.local {
+    reverse_proxy site2:80
+}
+EOF</code></pre>
+            <p>Detalhe de shell que importa: acrescentar no fim usa <code>&gt;&gt;</code> (dois sinais). Um <code>&gt;</code> sozinho <strong>sobrescreveria</strong> o arquivo inteiro e apagaria o site 1.</p>
+            <p>E o comando-chave, que recarrega a configuração <strong>a quente</strong>, sem derrubar o site 1:</p>
+            <pre><code class="language-bash">docker exec caddy caddy reload --config /etc/caddy/Caddyfile</code></pre>
+            <p>Linha nova no <code>hosts</code> do Windows pro <code>site2.local</code>, e os dois sites respondem no navegador.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">No servidor real</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Essa miniatura é exatamente o fluxo do servidor remoto: um nginx por site, Caddy único na frente, e os dois gestos (trocar arquivo, adicionar site + reload) são os mesmos. As únicas diferenças do lado real:</p>
+            <ul>
+                <li>O domínio é de verdade, apontado por DNS (não por arquivo <code>hosts</code>)</li>
+                <li>O HTTPS é automático: o Caddy consegue e renova o certificado sozinho</li>
+            </ul>
+            <p>Com isso a fila da prática local fechou: o campo de treino está completo e idêntico ao servidor real em miniatura. Próximos passos possíveis: Postgres em container com volume persistente, backup e restauração, e o acesso ao servidor de verdade.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

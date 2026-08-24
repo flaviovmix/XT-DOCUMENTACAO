@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servidor Local — Docker na VM — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Docker na VM</h1>
+
+<div class="audio-player" data-src="audio/docker-na-vm.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>A primeira peça real do campo de treino: instalar o <strong>Docker</strong> dentro da VM Ubuntu e liberar o uso sem <code>sudo</code>. O critério do passo é pequeno de propósito: <code>docker ps</code> respondendo sem sudo. No caminho, o imprevisto que virou aula: a VM inteira congelou, e a causa não era o que parecia.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Instalar o Docker — o script oficial</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Um comando só. O <code>curl</code> baixa o script oficial de instalação e o pipe entrega direto pro shell rodar com <code>sudo</code>. O script detecta a distribuição, adiciona o repositório certo e instala o Docker Engine completo:</p>
+            <pre><code class="language-bash">curl -fsSL https://get.docker.com | sudo sh</code></pre>
+            <p>Detalhe do dia a dia que aconteceu de verdade: o <code>sudo</code> pede senha e bateu a dúvida "qual senha eu coloquei nessa VM?". A resposta que salva: no Ubuntu, a senha do sudo é a <strong>mesma senha do login</strong>. Se você acabou de logar digitando uma senha, é essa.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Docker sem sudo — o grupo docker</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Recém instalado, o Docker só obedece root. Pra usar com o usuário normal, entra no grupo <code>docker</code> que o instalador criou (grupo, no Linux, é uma lista de usuários com uma permissão em comum):</p>
+            <pre><code class="language-bash">sudo usermod -aG docker $USER</code></pre>
+            <p>Pegadinha clássica: o comando <strong>não vale na hora</strong>. A lista de grupos do usuário é carregada no login, então precisa sair do SSH e entrar de novo. Depois de relogar, o critério do passo:</p>
+            <pre><code class="language-bash">docker ps
+# CONTAINER ID   IMAGE   COMMAND   CREATED   STATUS   PORTS   NAMES</code></pre>
+            <p>Tabelinha vazia, sem erro de permissão: Docker instalado e liberado.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O travamento — soft lockup e a falsa pista de OOM</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Na hora de conferir, o <code>docker ps</code> ficou pendurado sem resposta e o <code>Ctrl+C</code> não voltava. O teste esperto do diagnóstico: rodar um comando bobo, tipo <code>ls</code>. Ele respondeu na hora, o que separa o problema: <strong>terminal vivo, serviço do Docker travado</strong>. Depois nem o <code>sudo</code> respondia, e a sessão congelou de vez.</p>
+            <p>Na tela da própria VM, o kernel gritava:</p>
+            <pre><code class="language-bash">rcu: rcu_preempt kthread starved for 20295 jiffies!
+rcu: Unless rcu_preempt kthread gets sufficient CPU time, OOM is now expected behavior.
+watchdog: BUG: soft lockup - CPU#4 stuck for 59s! [dockerd:2176]
+watchdog: BUG: soft lockup - CPU#6 stuck for 59s! [swapper/6:0]</code></pre>
+            <p>Primeira leitura: faltou memória (o "OOM" na mensagem). <strong>Leitura errada.</strong> A VM tinha 8 GB de RAM e 8 CPUs, folga de sobra. A linha do OOM era consequência, não causa. A causa real estava no <code>CPU stuck</code>: as CPUs virtuais ficaram sem tempo de processador de verdade.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O diagnóstico — VirtualBox por cima do Hyper-V</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A pista final foi o <strong>ícone de tartaruga</strong> 🐢 no canto inferior da janela do VirtualBox. Tartaruga significa: o VirtualBox não está rodando direto no processador. No Windows 11, quando o Hyper-V da Microsoft está ativo (e ele vem ativo por causa de recursos de segurança, do WSL 2 e do Docker Desktop), o VirtualBox é obrigado a rodar por cima dessa camada: funciona, mas mais lento e sujeito a travadas sob carga.</p>
+            <p>Desligar o Hyper-V devolveria o modo rápido, mas <strong>quebraria o WSL 2 e o Docker Desktop do próprio Windows</strong>, usados no dia a dia. Não compensa pra uma VM de treino.</p>
+            <p>A solução pragmática: reduzir as CPUs da VM de <strong>8 pra 4</strong> (Settings → System → Processor). Por que menos CPU ajuda: cada vCPU é uma promessa de processador que o VirtualBox faz pro Linux convidado, e o kernel vigia se todas estão andando. Com 8 promessas, o Windows precisa achar espaço pra 8 threads ao mesmo tempo, e com a camada do Hyper-V no meio alguma sempre fica pra trás. Com 4, escalonar fica fácil e ninguém fica sem vez. Pra Ubuntu + Docker + containers leves, 4 sobra.</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Sintoma</th><th>O que revelou</th></tr>
+                    <tr><td><code>docker ps</code> pendurado, <code>ls</code> instantâneo</td><td>Terminal vivo, daemon do Docker travado</td></tr>
+                    <tr><td><code>sudo</code> também travando</td><td>Problema da VM inteira, não do Docker</td></tr>
+                    <tr><td><code>soft lockup - CPU stuck</code> no console</td><td>vCPUs sem tempo de processador</td></tr>
+                    <tr><td>Tartaruga 🐢 na janela do VirtualBox</td><td>Rodando por cima do Hyper-V (modo lento)</td></tr>
+                </table>
+            </div>
+            <p>Depois de desligar na força, baixar pra 4 vCPUs e religar: <code>docker ps</code> respondendo na hora, sem sudo. Critério fechado. E o diagnóstico vale ouro pra operar servidor: separar "terminal vivo, serviço travado" de "máquina morta", ler mensagem de kernel sem pânico, e desconfiar da primeira leitura.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
